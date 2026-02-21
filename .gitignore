@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# env files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# build output
+dist/
+dist-ssr/
+
+# vite cache
+.vite/
+
+# editor
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
