@@ -1,4 +1,4 @@
-# GridPulse
+<img width="1708" height="947" alt="Screenshot 2026-02-21 at 5 55 32 PM" src="https://github.com/user-attachments/assets/21f6b0a8-a257-4e1a-86f1-f9e57a2c24d1" /># GridPulse
 
 A real-time battery dispatch command center built for **Base Power Company** — Austin, TX.
 
@@ -21,13 +21,13 @@ Operators go from raw event data to a confirmed energy dispatch in three clicks.
 
 ## Screenshot — Dashboard
 
-> *[Insert screenshot of Dashboard tab here]*
+<img width="1710" height="944" alt="Screenshot 2026-02-21 at 5 53 18 PM" src="https://github.com/user-attachments/assets/56f0e614-caad-4c8e-b67d-dff053e81920" />
 
 ---
 
-## Screenshot — Dispatch Setup
+## Screenshot — Dispatch AI Briefing
 
-> *[Insert screenshot of Dispatch tab with event loaded here]*
+<img width="1710" height="947" alt="Screenshot 2026-02-21 at 5 54 52 PM" src="https://github.com/user-attachments/assets/537865ce-7650-4001-b999-e7989ecaf608" />
 
 ---
 
@@ -96,9 +96,9 @@ Price snaps immediately when the operator changes the date.
 
 ---
 
-## Screenshot — AI Dispatch Brief
+## Screenshot — Dispatch Commands Generated
 
-> *[Insert screenshot of AI brief panel here]*
+<img width="1708" height="942" alt="Screenshot 2026-02-21 at 5 56 56 PM" src="https://github.com/user-attachments/assets/0e4fe09d-40e5-4e41-9908-a4d4518b4c13" />
 
 ---
 
