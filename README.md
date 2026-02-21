@@ -1,5 +1,3 @@
-<img width="1708" height="947" alt="Screenshot 2026-02-21 at 5 55 32 PM" src="https://github.com/user-attachments/assets/21f6b0a8-a257-4e1a-86f1-f9e57a2c24d1" /># GridPulse
-
 A real-time battery dispatch command center built for **Base Power Company** — Austin, TX.
 
 GridPulse gives grid operators a live map-based interface to monitor energy demand spikes around UT Austin sports events, pre-position battery clusters, and dispatch stored energy back to the grid at peak pricing moments — all guided by AI.
@@ -161,7 +159,7 @@ As Texas builds more wind and solar capacity, the stored energy in Base Power's 
 
 ## Screenshot — Dispatch Log
 
-> *[Insert screenshot of Log tab with confirmed dispatches here]*
+<img width="1710" height="946" alt="Screenshot 2026-02-21 at 5 58 36 PM" src="https://github.com/user-attachments/assets/165735bb-cc73-46da-8c1b-2604aa0cc675" />
 
 ---
 
