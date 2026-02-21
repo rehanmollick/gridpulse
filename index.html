@@ -3,28 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GridPulse</title>
-    <link
-      href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
-      rel="stylesheet"
-    />
+    <title>GridPulse — Base Power Austin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500;1,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              bg: "#0a0e1a",
-              accent: "#3b82f6",
-              warning: "#f97316",
-              success: "#22c55e",
+              moss:    "#2E4036",
+              clay:    "#CC5833",
+              cream:   "#F2F0E9",
+              charcoal:"#1A1A1A",
+              "moss-light": "#3d5549",
+              "moss-dark":  "#1e2b24",
+              "clay-light": "#d9694a",
+              "clay-dark":  "#a84628",
+            },
+            fontFamily: {
+              sans:  ["Plus Jakarta Sans", "Outfit", "sans-serif"],
+              serif: ["Cormorant Garamond", "Georgia", "serif"],
+              mono:  ["JetBrains Mono", "monospace"],
+            },
+            borderRadius: {
+              "2xl": "1rem",
+              "3xl": "1.5rem",
+              "4xl": "2rem",
+              "5xl": "2.5rem",
             },
           },
         },
       };
     </script>
   </head>
-  <body class="bg-bg text-white">
+  <body class="bg-charcoal text-cream">
     <div id="root"></div>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <script type="module" src="/src/main.jsx"></script>

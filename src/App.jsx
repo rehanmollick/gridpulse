@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import utEventsCsv from "./data/UT_Sports_Events.csv?raw";
 import energyUsageCsv from "./data/Facility_Energy_Usage.csv?raw";
 import capacitiesCsv from "./data/venues_capcity.csv?raw";
+import { Zap, Activity, Clock, TrendingUp, ChevronRight, BarChart2, Map as MapIcon, BookOpen, X } from "lucide-react";
 
 // =====================================================================
 // CONSTANTS
@@ -927,26 +928,59 @@ function App() {
   useEffect(() => {
     const ticker = setInterval(() => {
       setErcotPrice((prev) => {
-        const jitter = Math.random() * 14 - 7;
-        let next = prev + jitter;
-        if (rampTargetRef.current && rampStartRef.current) {
-          const elapsed = (Date.now() - rampStartRef.current) / 1000;
-          const progress = Math.min(elapsed / 24, 1);
-          const target = rampInitRef.current + (rampTargetRef.current - rampInitRef.current) * progress;
-          next = Math.max(next, target);
-          if (progress >= 1) rampStartRef.current = null;
-        }
-        return Math.max(20, Math.min(450, Number(next.toFixed(2))));
+        // Small cosmetic jitter ±2 around the current date's base price
+        const jitter = (Math.random() - 0.5) * 4;
+        return Math.max(18, Math.min(500, Number((prev + jitter).toFixed(2))));
       });
-    }, 5000);
+    }, 3500);
     return () => clearInterval(ticker);
   }, []);
 
   useEffect(() => {
-    rampInitRef.current = ercotPrice;
-    rampTargetRef.current = 90 + Math.random() * 130;
-    rampStartRef.current = Date.now();
-  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!selectedDate) return;
+
+    // Deterministic seed from the date string so same date → same price
+    const seed = selectedDate.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const seededRand = (offset = 0) => {
+      const x = Math.sin(seed + offset) * 10000;
+      return x - Math.floor(x); // 0–1
+    };
+
+    const d = new Date(selectedDate);
+    const month = d.getMonth() + 1; // 1–12
+    const dow = d.getDay();         // 0 Sun … 6 Sat
+
+    // Seasonal base: Texas summer is brutal, winter mild
+    let base;
+    if (month >= 6 && month <= 9)       base = 85;   // Jun–Sep: hot/AC-heavy
+    else if (month >= 4 && month <= 5)  base = 52;   // Apr–May: spring warmup
+    else if (month >= 10 && month <= 11) base = 48;  // Oct–Nov: mild fall
+    else                                 base = 38;  // Dec–Mar: lowest demand
+
+    // Weekend bump — more activity, fans driving, AC running late
+    const weekendBonus = (dow === 0 || dow === 6) ? 18 : (dow === 5 ? 10 : 0);
+
+    // Event load factor: total attendance across all events drives price spike
+    const totalAttendance = eventsOnDate.reduce((s, e) => s + e.attendance, 0);
+    const attendanceBonus = Math.min(60, totalAttendance / 1200);
+
+    // Sport premium: football events have 3× the grid footprint of tennis
+    const hasBigEvent = eventsOnDate.some((e) =>
+      ["Football", "Men's Basketball", "Women's Basketball"].includes(e.category)
+    );
+    const bigEventBonus = hasBigEvent ? 25 : 0;
+
+    // Noise: ±15 deterministic per-date variation
+    const noise = (seededRand(1) - 0.5) * 30;
+
+    const newPrice = Math.max(22, Math.min(420, base + weekendBonus + attendanceBonus + bigEventBonus + noise));
+
+    // Snap immediately to the new date's price, then let the ticker jitter around it
+    setErcotPrice(Number(newPrice.toFixed(2)));
+    rampInitRef.current = newPrice;
+    rampTargetRef.current = null;
+    rampStartRef.current = null;
+  }, [selectedDate, eventsOnDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ===== DISPATCH ANIMATION =====
   function runDispatchAnimation(affectedZips, batteriesNeeded, dateKey) {
@@ -1132,128 +1166,144 @@ function App() {
   // ===== RENDER =====
   if (dateList.length === 0) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0a0e1a] text-slate-200">
-        No event data available.
+      <div className="flex h-screen items-center justify-center bg-charcoal text-cream">
+        <p className="font-serif italic text-2xl opacity-60">No event data available.</p>
       </div>
     );
   }
 
   const ercotTier = getErcotTier(ercotPrice);
 
+  // Map ERCOT tiers to Moss/Clay palette
+  const tierColor = ercotPrice < 50 ? "#2E4036" : ercotPrice < 150 ? "#a87c2a" : ercotPrice < 500 ? "#CC5833" : "#b91c1c";
+  const tierBg    = ercotPrice < 50 ? "rgba(46,64,54,0.3)" : ercotPrice < 150 ? "rgba(168,124,42,0.2)" : ercotPrice < 500 ? "rgba(204,88,51,0.2)" : "rgba(185,28,28,0.2)";
+  const tierBorder = ercotPrice < 50 ? "rgba(46,64,54,0.6)" : ercotPrice < 150 ? "rgba(168,124,42,0.5)" : ercotPrice < 500 ? "rgba(204,88,51,0.5)" : "rgba(185,28,28,0.5)";
+
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0a0e1a] text-white">
-      {/* ===== HEADER ===== */}
-      <header className="relative z-30 flex h-[64px] items-center gap-4 border-b border-slate-800 bg-[#040814]/95 px-5 backdrop-blur">
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-wide text-[#3b82f6]">GridPulse</h1>
-          <p className="text-xs text-slate-400">Base Power Austin — Battery Dispatch Command Center</p>
-        </div>
-        <nav className="flex gap-2 text-sm">
-          <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-            Dashboard
-          </TabButton>
-          <TabButton active={tab === "map"} onClick={() => setTab("map")}>
-            Dispatch
-          </TabButton>
-          <TabButton active={tab === "history"} onClick={() => setTab("history")}>
-            Dispatch Log
-          </TabButton>
-        </nav>
-        {/* ERCOT Price Alert — always visible */}
-        <div
-          className="rounded-md border px-3 py-1.5 text-xs font-mono shrink-0"
-          style={{ borderColor: ercotTier.border, background: ercotTier.bg, color: ercotTier.color }}
-        >
-          ERCOT {ercotTier.label} · ${ercotPrice.toFixed(0)}/MWh
-          {ercotIsSimulated && <span className="ml-1 opacity-50">(sim)</span>}
+    <div className="h-screen w-screen overflow-hidden bg-charcoal text-cream" style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', sans-serif" }}>
+
+      {/* ══════════════════════════════════════════
+          FLOATING PILL NAVBAR
+      ══════════════════════════════════════════ */}
+      <header className="absolute top-4 left-1/2 z-50 -translate-x-1/2 pointer-events-auto">
+        <div className="flex items-center gap-1 rounded-full border border-[rgba(46,64,54,0.7)] bg-[rgba(30,43,36,0.88)] px-2 py-1.5 shadow-2xl backdrop-blur-xl">
+          {/* Logo wordmark */}
+          <div className="px-3 py-1 mr-1">
+            <span className="font-sans font-bold text-sm tracking-tight text-cream">Grid</span>
+            <span className="font-serif italic text-sm text-[#CC5833]">Pulse</span>
+          </div>
+
+          <div className="h-4 w-px bg-[rgba(242,240,233,0.15)]" />
+
+          {/* Nav tabs */}
+          <nav className="flex gap-0.5 px-1">
+            <PillTab icon={<BarChart2 size={13}/>} active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
+              Dashboard
+            </PillTab>
+            <PillTab icon={<MapIcon size={13}/>} active={tab === "map"} onClick={() => setTab("map")}>
+              Dispatch
+            </PillTab>
+            <PillTab icon={<BookOpen size={13}/>} active={tab === "history"} onClick={() => setTab("history")}>
+              Log
+            </PillTab>
+          </nav>
+
+          <div className="h-4 w-px bg-[rgba(242,240,233,0.15)]" />
+
+          {/* ERCOT live badge */}
+          <div
+            className="tier-badge mx-2 flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-medium"
+            style={{ color: tierColor, background: tierBg, border: `1px solid ${tierBorder}` }}
+          >
+            <span className="status-dot h-1.5 w-1.5 rounded-full" style={{ background: tierColor }} />
+            ERCOT {ercotTier.label} · ${ercotPrice.toFixed(0)}/MWh
+            {ercotIsSimulated && <span className="opacity-40 ml-0.5">sim</span>}
+          </div>
         </div>
       </header>
 
-      {/* ===== MAP + PANELS ===== */}
-      <div className="relative h-[calc(100%-122px)]">
+      {/* ══════════════════════════════════════════
+          MAP + PANELS LAYER
+      ══════════════════════════════════════════ */}
+      <div className="relative h-full w-full">
+        {/* Mapbox container */}
         <div ref={mapNodeRef} className="absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#040814]/60 via-transparent to-[#040814]/70" />
 
-        {/* MAP LEGEND — bottom-right, draggable */}
+        {/* Warm organic vignette over map */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[rgba(26,26,26,0.55)] via-transparent to-[rgba(26,26,26,0.65)]" />
+
+        {/* ── Draggable Map Legend ─────────────────────────────── */}
         <div
-          className="absolute bottom-4 right-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur select-none"
-          style={{ transform: `translate(${legendPos.x}px, ${legendPos.y}px)` }}
+          className="absolute bottom-5 right-5 z-20 rounded-3xl p-3.5 text-xs select-none"
+          style={{
+            transform: `translate(${legendPos.x}px, ${legendPos.y}px)`,
+            background: "rgba(30,43,36,0.90)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(46,64,54,0.65)",
+          }}
         >
           <p
-            className="mb-2 font-semibold uppercase tracking-wide text-slate-400 cursor-grab active:cursor-grabbing"
+            className="mb-2 font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.45)] cursor-grab active:cursor-grabbing"
             onMouseDown={handleLegendMouseDown}
           >
             Map Legend
           </p>
-          <div className="space-y-2">
-            <LegendItem color="#ef4444" label="Event venue" />
-            <div className="border-t border-slate-700/60 pt-1.5 mt-1">
-              <p className="text-slate-500 mb-1 uppercase tracking-wide" style={{fontSize:"9px"}}>Base Power batteries (per neighborhood)</p>
-              <LegendItem color="#9ca3af" label="Installed in homes — idle, no command sent" dot />
-              <LegendItem color="#22c55e" label="Pre-charging — dispatch command sent" dot />
-            </div>
-            <div className="border-t border-slate-700/60 pt-1.5 mt-1">
-              <p className="text-slate-500 mb-1 uppercase tracking-wide" style={{fontSize:"9px"}}>Post-event grid demand surge (click for details)</p>
-              <LegendItem color="#dc2626" label=">160% above normal — heavy load" dot />
-              <LegendItem color="#f97316" label="120–160% — elevated load" dot />
-              <LegendItem color="#eab308" label="80–120% — moderate load" dot />
-            </div>
+          <div className="space-y-1.5">
+            <LegendItem color="#CC5833" label="Event venue" />
+            <div className="my-1.5 border-t border-[rgba(242,240,233,0.08)]" />
+            <p className="text-[9px] uppercase tracking-widest text-[rgba(242,240,233,0.3)]">Battery clusters</p>
+            <LegendItem color="rgba(242,240,233,0.35)" label="Idle — awaiting command" dot />
+            <LegendItem color="#2E4036" label="Pre-charging — dispatched" dot />
+            <div className="my-1.5 border-t border-[rgba(242,240,233,0.08)]" />
+            <p className="text-[9px] uppercase tracking-widest text-[rgba(242,240,233,0.3)]">Demand surge</p>
+            <LegendItem color="#b91c1c" label="&gt;160% above normal" dot />
+            <LegendItem color="#CC5833" label="120–160% elevated" dot />
+            <LegendItem color="#a87c2a" label="80–120% moderate" dot />
           </div>
         </div>
 
-        {/* LAYER TOGGLES — only on Dispatch tab so they don't overlap the Dashboard panels */}
-        {tab === "map" && (
-          <div className="absolute right-4 top-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur">
-            <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">Map Layers</p>
-            <div className="space-y-2">
-              <LayerToggle
-                color="#22c55e"
-                label="Battery clusters"
-                checked={layerVis.batteryClusters}
-                onChange={(v) => setLayerVis((p) => ({ ...p, batteryClusters: v }))}
-              />
-              <LayerToggle
-                color="#f97316"
-                label="Demand zones"
-                checked={layerVis.demandZones}
-                onChange={(v) => setLayerVis((p) => ({ ...p, demandZones: v }))}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* DISPATCH ACTIVE FLOATING CARD */}
+        {/* ── Dispatch Active Floating Badge ───────────────────── */}
         {showDispatchCard && dispatchPayload && (
           <div className="pointer-events-none absolute bottom-24 left-1/2 z-30 -translate-x-1/2">
-            <div className="rounded-xl border border-[#22c55e]/60 bg-[#05200f]/95 px-5 py-3.5 text-sm font-mono shadow-2xl backdrop-blur">
-              <p className="mb-1 font-bold text-[#22c55e]">⚡ DISPATCH ACTIVE</p>
-              <p className="text-slate-200">{dispatchPayload.batteries.toLocaleString()} batteries pre-charging</p>
-              <p className="text-slate-400">Discharge: {dispatchPayload.discharge_window}</p>
-              <p className="font-semibold text-[#22c55e]">Est. capture: {dispatchPayload.estimated_total_capture}</p>
+            <div
+              className="flex items-center gap-3 rounded-full px-5 py-3 font-mono text-xs shadow-2xl"
+              style={{
+                background: "rgba(30,43,36,0.95)",
+                border: "1px solid rgba(46,64,54,0.8)",
+                backdropFilter: "blur(20px)",
+              }}
+            >
+              <span className="status-dot h-2 w-2 rounded-full bg-[#2E4036]" />
+              <span className="font-semibold text-cream">{dispatchPayload.batteries.toLocaleString()} batteries pre-charging</span>
+              <span className="text-[rgba(242,240,233,0.5)]">·</span>
+              <span className="text-[#CC5833] font-semibold">{dispatchPayload.estimated_total_capture} est.</span>
             </div>
           </div>
         )}
 
-        {/* ===== DASHBOARD TAB ===== */}
+        {/* ══════════════════════════════════════════
+            DASHBOARD TAB
+        ══════════════════════════════════════════ */}
         {tab === "dashboard" && (
           <>
-            <aside className="absolute left-4 top-4 z-20 w-[360px] max-h-[calc(100vh-120px)] overflow-y-auto rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
+            {/* LEFT — Event Analysis */}
+            <aside className="absolute left-5 top-4 z-20 w-[340px] max-h-[calc(100vh-20px)] overflow-y-auto rounded-4xl p-5 shadow-2xl panel-glass">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
                 Event Analysis
-              </h2>
-              <p className="mt-0.5 text-xs text-slate-400">
-                Pick a date — all UT events that day load together
               </p>
+              <h2 className="mt-1 font-serif italic text-xl text-cream leading-tight">
+                Select a game date
+              </h2>
 
               {/* Date selector */}
-              <div className="mt-3">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <div className="mt-4">
+                <label className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
                   Game Date
                 </label>
                 <select
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full rounded-md border border-slate-600 bg-[#111a30] px-3 py-2 text-sm text-slate-100 outline-none transition hover:border-[#3b82f6] focus:border-[#3b82f6]"
+                  className="w-full rounded-2xl border border-[rgba(46,64,54,0.5)] bg-[rgba(26,26,26,0.6)] px-3 py-2 font-sans text-sm text-cream outline-none transition hover:border-[#CC5833] focus:border-[#CC5833]"
                 >
                   {dateList.map((dk) => {
                     const count = eventsByDate.get(dk)?.length ?? 0;
@@ -1266,82 +1316,80 @@ function App() {
                 </select>
               </div>
 
-              {/* Event list for selected date — scrollable so stats stay visible */}
-              <div className="mt-3 max-h-[200px] overflow-y-auto space-y-1.5 pr-0.5">
+              {/* Event list */}
+              <div className="mt-3 max-h-[200px] space-y-1.5 overflow-y-auto pr-0.5">
                 {eventsOnDate.map((ev) => (
-                  <div key={ev.id} className="rounded-lg border border-slate-700 bg-[#0b1223] px-3 py-2 text-sm">
+                  <div
+                    key={ev.id}
+                    className="rounded-2xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.5)] px-3 py-2.5"
+                  >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-slate-100 leading-tight">{ev.name}</p>
-                      <span className="text-xs text-slate-500 shrink-0 mt-0.5">{ev.category}</span>
+                      <p className="font-sans text-sm font-semibold text-cream leading-tight">{ev.name}</p>
+                      <span className="font-sans text-[10px] text-[rgba(242,240,233,0.4)] mt-0.5 shrink-0">{ev.category}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-400">{ev.venue}</p>
-                    <p className="text-xs text-slate-500">
-                      {formatDateTime(ev.startAt)} · ends ~{ev.endTime} · {ev.attendance.toLocaleString()} expected · {ev.tempF}°F
+                    <p className="mt-0.5 font-sans text-xs text-[rgba(242,240,233,0.55)]">{ev.venue}</p>
+                    <p className="font-mono text-[10px] text-[rgba(242,240,233,0.4)]">
+                      {formatDateTime(ev.startAt)} · ends ~{ev.endTime} · {ev.attendance.toLocaleString()} ppl · {ev.tempF}°F
                     </p>
                   </div>
                 ))}
               </div>
 
-              {/* Aggregated stats for the whole date */}
-              <div className="mt-3 space-y-2 text-sm">
-                <StatRow
-                  label="Combined demand increase"
-                  value={`${stats.projectedMW.toFixed(1)} MW`}
-                  hint="Sum across all events on this date"
-                />
-                <StatRow
-                  label="Total batteries to dispatch"
-                  value={`${stats.batteriesNeeded.toLocaleString()} of ${FLEET_SIZE.toLocaleString()}`}
-                />
-                <StatRow label="Pre-charge by" value={stats.preChargeBy} />
-                <StatRow
-                  label="Est. revenue this date"
-                  value={`$${stats.revenueEstimate.toLocaleString()}`}
-                  hint={`${stats.batteriesNeeded} batteries × $${stats.spreadPerBattery}/battery`}
-                />
+              {/* Stats */}
+              <div className="mt-3 space-y-1.5">
+                <OrgStatRow label="Demand increase" value={`${stats.projectedMW.toFixed(1)} MW`} />
+                <OrgStatRow label="Batteries to dispatch" value={`${stats.batteriesNeeded.toLocaleString()} / ${FLEET_SIZE.toLocaleString()}`} />
+                <OrgStatRow label="Pre-charge by" value={stats.preChargeBy} />
+                <OrgStatRow label="Est. revenue" value={`$${stats.revenueEstimate.toLocaleString()}`} hint={`${stats.batteriesNeeded} × $${stats.spreadPerBattery}/battery`} />
               </div>
 
+              {/* CTA */}
               <button
                 onClick={() => setTab("map")}
-                className="mt-4 w-full rounded-md bg-[#3b82f6] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#2563eb]"
+                className="btn-magnetic mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#CC5833] px-4 py-2.5 font-sans text-sm font-semibold text-cream shadow-lg"
               >
-                Go to Dispatch →
+                <span className="btn-bg rounded-full bg-[#a84628]" />
+                <span className="relative z-10">Go to Dispatch</span>
+                <ChevronRight size={15} className="relative z-10" />
               </button>
             </aside>
 
-            <section className="absolute right-4 top-4 z-20 w-[360px] rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
-                Operations Overview
+            {/* RIGHT — Operations Overview */}
+            <section className="absolute right-5 top-4 z-20 w-[340px] rounded-4xl p-5 shadow-2xl panel-glass">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
+                Operations
+              </p>
+              <h2 className="mt-1 font-serif italic text-xl text-cream leading-tight">
+                Overview
               </h2>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <KpiCard label="Events this date" value={kpi.eventsOnDate} />
-                <KpiCard label="Event dates (next 7d)" value={kpi.upcomingDates} />
-                <KpiCard label="ZIPs affected" value={allAffectedZips.length} />
-                <KpiCard
-                  label="Est. revenue this date"
-                  value={`$${Math.round(kpi.projectedRevenue).toLocaleString()}`}
-                />
+
+              {/* KPI grid */}
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <OrgKpiCard icon={<Activity size={14}/>} label="Events today" value={kpi.eventsOnDate} />
+                <OrgKpiCard icon={<Clock size={14}/>} label="Event dates (7d)" value={kpi.upcomingDates} />
+                <OrgKpiCard icon={<MapIcon size={14}/>} label="ZIPs affected" value={allAffectedZips.length} />
+                <OrgKpiCard icon={<TrendingUp size={14}/>} label="Est. revenue" value={`$${Math.round(kpi.projectedRevenue).toLocaleString()}`} />
               </div>
 
-              {/* ERCOT Price Alert */}
+              {/* ERCOT block */}
               <div
-                className="mt-3 rounded-lg border p-3 text-sm"
-                style={{ borderColor: ercotTier.border, background: ercotTier.bg }}
+                className="mt-3 rounded-3xl p-3.5"
+                style={{ background: tierBg, border: `1px solid ${tierBorder}` }}
               >
-                <p className="mb-1 text-xs uppercase tracking-wide" style={{ color: ercotTier.color }}>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-widest" style={{ color: tierColor }}>
                   ERCOT Price Alert
                 </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold" style={{ color: ercotTier.color }}>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <span className="font-serif text-2xl font-medium" style={{ color: tierColor }}>
                     {ercotTier.label}
                   </span>
-                  <span className="font-mono text-slate-200">
-                    ${ercotPrice.toFixed(2)}/MWh
-                    {ercotIsSimulated && <span className="ml-1 text-xs text-slate-500">(simulated)</span>}
+                  <span className="font-mono text-sm text-cream">
+                    ${ercotPrice.toFixed(2)}<span className="text-[rgba(242,240,233,0.4)]">/MWh</span>
+                    {ercotIsSimulated && <span className="ml-1 font-sans text-[10px] text-[rgba(242,240,233,0.35)]">sim</span>}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-slate-400">{ercotTier.desc}</p>
-                <p className="mt-1.5 text-xs text-slate-600">
+                <p className="mt-1 font-sans text-xs text-[rgba(242,240,233,0.55)]">{ercotTier.desc}</p>
+                <p className="mt-2 font-mono text-[9px] text-[rgba(242,240,233,0.3)]">
                   Normal &lt;$50 · Elevated $50–150 · Critical $150–500 · Emergency $500+
                 </p>
               </div>
@@ -1349,21 +1397,28 @@ function App() {
           </>
         )}
 
-        {/* ===== DISPATCH TAB ===== */}
+        {/* ══════════════════════════════════════════
+            DISPATCH TAB
+        ══════════════════════════════════════════ */}
         {tab === "map" && (
           <>
-            <aside className="absolute left-4 top-4 z-20 w-[310px] rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
+            {/* LEFT — Dispatch Setup */}
+            <aside className="absolute left-5 top-4 z-20 w-[300px] rounded-4xl p-5 shadow-2xl panel-glass">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
                 Dispatch Setup
+              </p>
+              <h2 className="mt-1 font-serif italic text-lg text-cream leading-tight">
+                Command Center
               </h2>
+
               <div className="mt-3">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <label className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
                   Game Date
                 </label>
                 <select
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full rounded-md border border-slate-600 bg-[#111a30] px-3 py-2 text-sm text-slate-100 outline-none transition hover:border-[#3b82f6] focus:border-[#3b82f6]"
+                  className="w-full rounded-2xl border border-[rgba(46,64,54,0.5)] bg-[rgba(26,26,26,0.6)] px-3 py-2 font-sans text-sm text-cream outline-none transition hover:border-[#CC5833] focus:border-[#CC5833]"
                 >
                   {dateList.map((dk) => {
                     const count = eventsByDate.get(dk)?.length ?? 0;
@@ -1375,132 +1430,132 @@ function App() {
                   })}
                 </select>
               </div>
-              {/* Compact event list */}
+
               <div className="mt-2 space-y-1">
                 {eventsOnDate.map((ev) => (
-                  <div key={ev.id} className="rounded border border-slate-700/60 bg-[#0b1223] px-2 py-1.5 text-xs">
-                    <span className="font-semibold text-slate-200">{ev.name}</span>
-                    <span className="ml-2 text-slate-500">{ev.venue} · ends {ev.endTime}</span>
+                  <div key={ev.id} className="rounded-xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.5)] px-2.5 py-1.5 font-sans text-xs">
+                    <span className="font-semibold text-cream">{ev.name}</span>
+                    <span className="ml-2 text-[rgba(242,240,233,0.4)]">{ev.venue} · ends {ev.endTime}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-3 space-y-2">
-                <StatRow label="Affected ZIP codes" value={allAffectedZips.join(", ")} />
-                <StatRow label="Demand spike" value={`${stats.projectedMW.toFixed(1)} MW`} />
-                <StatRow
-                  label="Batteries"
-                  value={`${stats.batteriesNeeded.toLocaleString()} / ${FLEET_SIZE.toLocaleString()}`}
-                />
-                <StatRow label="Pre-charge by" value={stats.preChargeBy} />
+              <div className="mt-3 space-y-1.5">
+                <OrgStatRow label="ZIPs" value={allAffectedZips.join(", ")} />
+                <OrgStatRow label="Demand spike" value={`${stats.projectedMW.toFixed(1)} MW`} />
+                <OrgStatRow label="Batteries" value={`${stats.batteriesNeeded.toLocaleString()} / ${FLEET_SIZE.toLocaleString()}`} />
+                <OrgStatRow label="Pre-charge by" value={stats.preChargeBy} />
               </div>
 
-              <p className="mt-3 text-xs text-slate-500">
-                Steps: 1) Generate brief → 2) Review → 3) Confirm Dispatch
+              <p className="mt-3 font-sans text-[10px] text-[rgba(242,240,233,0.35)]">
+                1) Generate brief → 2) Review → 3) Confirm
               </p>
 
               <button
                 onClick={requestDispatchBrief}
                 disabled={briefLoading || dispatchConfirmed}
-                className="mt-3 w-full rounded-md bg-[#3b82f6] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-magnetic mt-3 w-full rounded-full bg-[#2E4036] px-4 py-2.5 font-sans text-sm font-semibold text-cream transition disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {briefLoading
-                  ? "Generating Brief..."
-                  : dispatchConfirmed
-                  ? "Brief Generated ✓"
-                  : "Generate AI Dispatch Brief"}
+                <span className="btn-bg rounded-full bg-[#1e2b24]" />
+                <span className="relative z-10">
+                  {briefLoading ? "Generating Brief…" : dispatchConfirmed ? "Brief Generated ✓" : "Generate AI Dispatch Brief"}
+                </span>
               </button>
 
-              {/* Activation progress counter */}
               {dispatchConfirmed && activatingCount > 0 && activatingCount < stats.batteriesNeeded && (
-                <div className="mt-3 rounded-md border border-[#22c55e]/40 bg-[#05200f] px-2 py-1.5 font-mono text-xs text-[#22c55e]">
-                  Activating batteries: {activatingCount.toLocaleString()} / {stats.batteriesNeeded.toLocaleString()}
+                <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[rgba(46,64,54,0.5)] bg-[rgba(46,64,54,0.2)] px-3 py-2 font-mono text-xs text-cream">
+                  <span className="status-dot h-1.5 w-1.5 rounded-full bg-[#2E4036]" />
+                  Activating: {activatingCount.toLocaleString()} / {stats.batteriesNeeded.toLocaleString()}
                 </div>
               )}
             </aside>
 
-            <section className="absolute right-20 top-4 z-20 w-[430px] max-h-[calc(100vh-140px)] overflow-y-auto rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
-              {/* Before-state context */}
+            {/* RIGHT — AI Dispatch Brief */}
+            <section className="absolute right-5 top-4 z-20 w-[420px] max-h-[calc(100vh-20px)] overflow-y-auto rounded-4xl p-5 shadow-2xl panel-glass">
+              {/* Close */}
+              <button
+                onClick={() => { setShowDispatchCard(false); setDispatchBrief(""); setBriefError(""); }}
+                className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(242,240,233,0.15)] bg-[rgba(26,26,26,0.5)] text-[rgba(242,240,233,0.5)] transition hover:text-cream hover:border-[rgba(242,240,233,0.4)]"
+              >
+                <X size={12} />
+              </button>
+
+              {/* Current state banner */}
               {!dispatchConfirmed && (
-                <div className="mb-4 rounded-lg border border-slate-700 bg-[#0b1223] p-3 text-xs text-slate-400">
-                  <p className="mb-1 font-semibold uppercase tracking-wide text-slate-500">
-                    Current State
-                  </p>
-                  <p>
-                    {stats.batteriesNeeded.toLocaleString()} batteries on standby across ZIPs{" "}
-                    {allAffectedZips.join(", ")}
-                  </p>
-                  <p className="mt-0.5">No pre-charging in progress — awaiting dispatch command</p>
+                <div className="mb-4 rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.4)] p-3 font-sans text-xs text-[rgba(242,240,233,0.5)]">
+                  <p className="mb-1 font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.35)]" style={{fontSize:"9px"}}>Current State</p>
+                  <p>{stats.batteriesNeeded.toLocaleString()} batteries on standby · ZIPs {allAffectedZips.join(", ")}</p>
+                  <p className="mt-0.5">No pre-charging — awaiting dispatch command</p>
                 </div>
               )}
 
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
-                AI Dispatch Brief
-              </h2>
-              <div className="mt-2 min-h-[180px] rounded-lg border border-slate-700 bg-[#050914] p-3 font-mono text-xs text-slate-100">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">AI Dispatch</p>
+              <h2 className="mt-0.5 font-serif italic text-xl text-cream">Brief</h2>
+
+              {/* Brief content */}
+              <div className="mt-3 min-h-[160px] rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.5)] p-4 font-mono text-xs text-cream">
                 {briefLoading && (
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#3b82f6] border-t-transparent" />
-                    Querying dispatch model...
+                  <div className="flex items-center gap-3 text-[rgba(242,240,233,0.6)]">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#CC5833] border-t-transparent" />
+                    Querying dispatch model…
                   </div>
                 )}
                 {!briefLoading && briefError && (
-                  <p className="text-[#f97316]">Brief unavailable: {briefError}</p>
+                  <p className="text-[#CC5833]">Brief unavailable: {briefError}</p>
                 )}
                 {!briefLoading && !briefError && dispatchBrief && (
-                  <pre className="whitespace-pre-wrap leading-relaxed">{dispatchBrief}</pre>
+                  <pre className="whitespace-pre-wrap leading-relaxed text-[rgba(242,240,233,0.9)]">{dispatchBrief}</pre>
                 )}
                 {!briefLoading && !briefError && !dispatchBrief && (
-                  <p className="text-slate-500">
-                    Click &quot;Generate AI Dispatch Brief&quot; above to get operator instructions
-                    for this event.
+                  <p className="text-[rgba(242,240,233,0.35)]">
+                    Click "Generate AI Dispatch Brief" to get operator instructions for this event.
                   </p>
                 )}
               </div>
 
+              {/* Confirm button */}
               {dispatchBrief && !dispatchConfirmed && (
                 <button
                   onClick={confirmDispatch}
                   disabled={morphLoading}
-                  className="mt-4 w-full rounded-md bg-[#f97316] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#ea580c] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-magnetic mt-4 w-full rounded-full bg-[#CC5833] px-4 py-2.5 font-sans text-sm font-semibold text-cream transition disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {morphLoading ? "Sending Dispatch Command..." : "Confirm Dispatch"}
+                  <span className="btn-bg rounded-full bg-[#a84628]" />
+                  <span className="relative z-10">
+                    {morphLoading ? "Sending Dispatch Command…" : "Confirm Dispatch"}
+                  </span>
                 </button>
               )}
 
-              {/* After: Dispatch confirmed state */}
+              {/* Confirmed state */}
               {dispatchConfirmed && dispatchPayload && (
                 <div className="mt-4 space-y-3">
-                  <div className="rounded-md border border-[#22c55e]/60 bg-[#05200f] px-3 py-2.5">
-                    <p className="font-semibold text-[#22c55e]">✓ Dispatch Command Sent</p>
-                    <p className="mt-0.5 text-xs text-slate-300">
-                      {stats.batteriesNeeded.toLocaleString()} batteries pre-charging · Est.{" "}
-                      {dispatchPayload.estimated_total_capture} capture
+                  <div className="rounded-3xl border border-[rgba(46,64,54,0.6)] bg-[rgba(46,64,54,0.25)] px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="status-dot h-2 w-2 rounded-full bg-[#2E4036]" />
+                      <p className="font-sans text-sm font-semibold text-cream">Dispatch Command Sent</p>
+                    </div>
+                    <p className="mt-1 font-mono text-xs text-[rgba(242,240,233,0.6)]">
+                      {stats.batteriesNeeded.toLocaleString()} batteries pre-charging · Est. {dispatchPayload.estimated_total_capture}
                     </p>
                   </div>
 
-                  {/* What changed summary */}
-                  <div className="rounded-lg border border-slate-700 bg-[#0b1223] p-3 text-xs">
-                    <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">
-                      What changed
-                    </p>
-                    <div className="space-y-1 text-slate-300">
-                      <p>• {stats.batteriesNeeded.toLocaleString()} batteries: Standby → Pre-charging</p>
-                      <p>• Charge target: 95% by {stats.preChargeBy}</p>
-                      <p>• Discharge window: {dispatchPayload.discharge_window}</p>
-                      <p>• ZIPs covered: {allAffectedZips.join(", ")}</p>
-                      <p className="font-semibold text-[#22c55e]">
-                        • Est. revenue: {dispatchPayload.estimated_total_capture}
-                      </p>
+                  {/* What changed */}
+                  <div className="rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.4)] p-3 font-mono text-xs">
+                    <p className="mb-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.35)]">What Changed</p>
+                    <div className="space-y-1 text-[rgba(242,240,233,0.7)]">
+                      <p>· {stats.batteriesNeeded.toLocaleString()} batteries: Standby → Pre-charging</p>
+                      <p>· Charge target: 95% by {stats.preChargeBy}</p>
+                      <p>· Discharge: {dispatchPayload.discharge_window}</p>
+                      <p>· ZIPs: {allAffectedZips.join(", ")}</p>
+                      <p className="text-cream font-semibold">· Est. revenue: {dispatchPayload.estimated_total_capture}</p>
                     </div>
                   </div>
 
-                  {/* JSON API Payload */}
+                  {/* Payload JSON */}
                   <div>
-                    <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">
-                      Dispatch Command Generated
-                    </p>
-                    <div className="overflow-x-auto rounded-lg border border-slate-700 bg-[#050914] p-3 font-mono text-xs text-[#86efac]">
+                    <p className="mb-1.5 font-sans text-[9px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.35)]">Dispatch Command</p>
+                    <div className="overflow-x-auto rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.6)] p-3 font-mono text-xs text-[rgba(204,88,51,0.85)]">
                       <pre>{JSON.stringify(dispatchPayload, null, 2)}</pre>
                     </div>
                   </div>
@@ -1510,67 +1565,62 @@ function App() {
           </>
         )}
 
-        {/* ===== DISPATCH LOG TAB ===== */}
+        {/* ══════════════════════════════════════════
+            DISPATCH LOG TAB
+        ══════════════════════════════════════════ */}
         {tab === "history" && (
-          <section className="absolute left-1/2 top-4 z-20 w-[900px] -translate-x-1/2 rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
-              Dispatch Log
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-400">
-              Confirmed dispatch actions — each row shows the command ID, battery count, revenue math, and timestamp.
+          <section className="absolute left-1/2 top-1/2 z-20 w-[900px] -translate-x-1/2 -translate-y-1/2 max-h-[calc(100vh-40px)] overflow-y-auto rounded-4xl p-6 shadow-2xl panel-glass">
+            <p className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">
+              Confirmed Dispatches
+            </p>
+            <h2 className="mt-1 font-serif italic text-2xl text-cream">Dispatch Log</h2>
+            <p className="mt-0.5 font-sans text-xs text-[rgba(242,240,233,0.45)]">
+              Each row shows command ID, battery count, revenue math, and timestamp.
             </p>
 
-            <div className="mt-4 overflow-hidden rounded-lg border border-slate-700">
-              <div className="grid grid-cols-6 bg-[#0a1020] px-3 py-2 text-xs uppercase tracking-wide text-slate-400">
-                <span>Dispatch ID</span>
-                <span>Event</span>
-                <span>Batteries</span>
-                <span>Spread</span>
-                <span>Est. Capture</span>
-                <span>Time</span>
+            <div className="mt-5 overflow-hidden rounded-3xl border border-[rgba(46,64,54,0.4)]">
+              <div className="grid grid-cols-6 bg-[rgba(46,64,54,0.3)] px-4 py-2.5 font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.45)]">
+                <span>Dispatch ID</span><span>Event</span><span>Batteries</span>
+                <span>Spread</span><span>Est. Capture</span><span>Time</span>
               </div>
-              <div className="max-h-[280px] overflow-auto bg-[#050914] text-xs">
+              <div className="max-h-[280px] overflow-auto bg-[rgba(26,26,26,0.4)] font-mono text-xs">
                 {dispatchHistory.length === 0 ? (
-                  <p className="px-3 py-4 text-slate-400">
-                    No dispatches confirmed yet. Go to Dispatch tab, generate a brief, and click Confirm Dispatch.
+                  <p className="px-4 py-5 font-sans text-sm italic text-[rgba(242,240,233,0.35)]">
+                    No dispatches confirmed yet — go to Dispatch tab to get started.
                   </p>
                 ) : (
                   dispatchHistory.map((entry) => (
-                    <div key={entry.id} className="border-t border-slate-800 px-3 py-2.5 text-slate-200">
+                    <div key={entry.id} className="border-t border-[rgba(46,64,54,0.3)] px-4 py-3">
                       <div className="grid grid-cols-4 gap-2">
-                        <span className="font-mono text-slate-400 text-xs col-span-1">{entry.dispatchId}</span>
-                        <span className="text-slate-300 col-span-1">{entry.date}</span>
-                        <span className="text-[#eab308]">${entry.spreadPerBattery}/batt.</span>
-                        <span className="font-semibold text-[#22c55e]">${entry.totalCapture.toLocaleString()}</span>
+                        <span className="text-[rgba(242,240,233,0.45)] col-span-1">{entry.dispatchId}</span>
+                        <span className="text-cream col-span-1">{entry.date}</span>
+                        <span className="text-[#a87c2a]">${entry.spreadPerBattery}/batt.</span>
+                        <span className="font-semibold text-cream">${entry.totalCapture.toLocaleString()}</span>
                       </div>
-                      <p className="mt-0.5 text-slate-500 text-xs">
+                      <p className="mt-0.5 font-sans text-[10px] text-[rgba(242,240,233,0.4)]">
                         {entry.eventCount} event(s) · {entry.batteries.toLocaleString()} batteries · {formatDateTime(entry.when)}
                       </p>
-                      <p className="text-slate-600 text-xs truncate">{entry.eventNames}</p>
+                      <p className="font-sans text-[10px] text-[rgba(242,240,233,0.3)] truncate">{entry.eventNames}</p>
                     </div>
                   ))
                 )}
               </div>
             </div>
 
-            {/* Revenue math transparency */}
+            {/* Revenue math */}
             {dispatchHistory.length > 0 && (
-              <div className="mt-3 rounded-lg border border-slate-700 bg-[#0b1223] p-3 text-xs">
-                <p className="mb-1.5 font-semibold uppercase tracking-wide text-slate-400">
-                  Revenue Math
-                </p>
+              <div className="mt-4 rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(46,64,54,0.15)] p-4 font-mono text-xs">
+                <p className="mb-2 font-sans text-[9px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">Revenue Math</p>
                 {dispatchHistory.slice(0, 1).map((e) => (
-                  <p key={e.id} className="text-slate-300">
+                  <p key={e.id} className="text-[rgba(242,240,233,0.7)]">
                     {e.batteries.toLocaleString()} batteries × ${e.spreadPerBattery}/battery ={" "}
-                    <span className="font-semibold text-[#22c55e]">
-                      ${e.totalCapture.toLocaleString()}
-                    </span>
+                    <span className="font-semibold text-cream">${e.totalCapture.toLocaleString()}</span>
                   </p>
                 ))}
                 {dispatchHistory.length > 1 && (
-                  <p className="mt-1 text-slate-300">
+                  <p className="mt-1 text-[rgba(242,240,233,0.7)]">
                     Total across {dispatchHistory.length} dispatches:{" "}
-                    <span className="font-semibold text-[#22c55e]">
+                    <span className="font-semibold text-cream">
                       ${dispatchHistory.reduce((s, e) => s + e.totalCapture, 0).toLocaleString()}
                     </span>
                   </p>
@@ -1578,41 +1628,43 @@ function App() {
               </div>
             )}
 
-            {/* About This Data footnote */}
-            <div className="mt-3 rounded-lg border border-slate-800 bg-[#050914] p-3 text-xs text-slate-500">
-              <p className="mb-1 font-semibold uppercase tracking-wide">About This Data</p>
+            {/* Data footnote */}
+            <div className="mt-3 rounded-3xl border border-[rgba(46,64,54,0.3)] bg-[rgba(26,26,26,0.4)] p-4 font-sans text-xs text-[rgba(242,240,233,0.4)]">
+              <p className="mb-1.5 font-semibold uppercase tracking-widest text-[9px]">About This Data</p>
               <p className="leading-relaxed">
-                Event data from UT Austin athletic schedule CSV. Battery count reflects Base
-                Power&apos;s current Austin deployment (~{FLEET_SIZE.toLocaleString()} units as of
-                2025). ERCOT prices simulated based on historical averages for similar events —
-                labeled &quot;sim&quot; when not fetched live. Revenue projections use $8–$25/battery
-                spread depending on ERCOT price tier (batteries charge at ~$0.03/kWh overnight,
-                discharge during event spike). Fleet size grows as Base Power deploys more units.
+                Event data from UT Austin athletic schedule CSV. Battery count reflects Base Power's current Austin deployment (~{FLEET_SIZE.toLocaleString()} units as of 2025). ERCOT prices simulated based on historical averages — labeled "sim" when not fetched live. Revenue projections use $8–$25/battery spread depending on ERCOT tier.
               </p>
             </div>
           </section>
         )}
       </div>
 
-      {/* ===== FOOTER ===== */}
-      <footer className="flex h-[58px] items-center justify-between border-t border-slate-800 bg-[#070b14] px-5 font-mono text-xs">
+      {/* ══════════════════════════════════════════
+          FOOTER
+      ══════════════════════════════════════════ */}
+      <footer
+        className="absolute bottom-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-2.5 font-mono text-[10px]"
+        style={{ background: "rgba(26,26,26,0.85)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(46,64,54,0.35)" }}
+      >
         <div className="flex items-center gap-4">
-          <span style={{ color: ercotTier.color }}>
+          <span style={{ color: tierColor }}>
             ERCOT {ercotTier.label}: ${ercotPrice.toFixed(2)}/MWh
-            {ercotIsSimulated && <span className="ml-1 opacity-40">[simulated]</span>}
+            {ercotIsSimulated && <span className="ml-1 opacity-40">[sim]</span>}
           </span>
-          <span className="text-slate-600">|</span>
-          <span className="text-slate-500">
-            Fleet: {FLEET_SIZE.toLocaleString()} batteries · Austin, TX
-          </span>
+          <span className="text-[rgba(242,240,233,0.2)]">|</span>
+          <span className="text-[rgba(242,240,233,0.35)]">Fleet: {FLEET_SIZE.toLocaleString()} batteries · Austin, TX</span>
         </div>
-        {dispatchConfirmed && dispatchPayload && (
-          <span className="text-[#22c55e]">
-            ⚡ {stats.batteriesNeeded.toLocaleString()} batteries pre-charging · Est.{" "}
-            {dispatchPayload.estimated_total_capture}
+        <div className="flex items-center gap-2">
+          <span className="status-dot h-1.5 w-1.5 rounded-full bg-[#2E4036]" />
+          <span className="text-[rgba(242,240,233,0.4)]">System Operational</span>
+        </div>
+        {dispatchConfirmed && dispatchPayload ? (
+          <span className="text-cream">
+            ⚡ {stats.batteriesNeeded.toLocaleString()} batteries pre-charging · Est. {dispatchPayload.estimated_total_capture}
           </span>
+        ) : (
+          <span className="text-[rgba(242,240,233,0.3)]">Event data: UT Austin Athletics · Base Power demo</span>
         )}
-        <span className="text-slate-700">Event data: UT Austin Athletics · Base Power demo</span>
       </footer>
     </div>
   );
@@ -1622,72 +1674,56 @@ function App() {
 // HELPER COMPONENTS
 // =====================================================================
 
-function TabButton({ children, active, onClick }) {
+function PillTab({ children, active, onClick, icon }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-md border px-3 py-1.5 text-sm transition ${
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-xs font-medium transition-all duration-200 ${
         active
-          ? "border-[#3b82f6] bg-[#1e3a8a]/60 text-white"
-          : "border-slate-700 bg-[#0b1223] text-slate-300 hover:border-slate-500"
+          ? "bg-[#2E4036] text-cream shadow-md"
+          : "text-[rgba(242,240,233,0.55)] hover:text-cream hover:bg-[rgba(46,64,54,0.4)]"
       }`}
     >
+      {icon}
       {children}
     </button>
   );
 }
 
-function KpiCard({ label, value }) {
+function OrgKpiCard({ label, value, icon }) {
   return (
-    <div className="rounded-md border border-slate-700 bg-[#0b1223] px-3 py-2">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-100">{value}</p>
-    </div>
-  );
-}
-
-function StatRow({ label, value, hint }) {
-  return (
-    <div className="flex items-start justify-between gap-2 rounded-md border border-slate-700 bg-[#0b1223] px-3 py-2">
-      <div className="min-w-0">
-        <span className="text-xs uppercase tracking-wide text-slate-400">{label}</span>
-        {hint && <p className="mt-0.5 text-xs text-slate-600">{hint}</p>}
+    <div className="rounded-3xl border border-[rgba(46,64,54,0.4)] bg-[rgba(26,26,26,0.5)] px-3 py-2.5">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[rgba(242,240,233,0.4)]">{icon}</span>
+        <p className="font-sans text-[9px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">{label}</p>
       </div>
-      <span className="shrink-0 text-sm font-semibold text-slate-100">{value}</span>
+      <p className="mt-1.5 font-sans text-lg font-bold text-cream">{value}</p>
     </div>
   );
 }
 
-function LegendItem({ color, label, dot, line }) {
+function OrgStatRow({ label, value, hint }) {
   return (
-    <div className="flex items-center gap-2 text-slate-300">
-      {line ? (
-        <div className="h-0 w-5 shrink-0 border-t-2 border-dashed" style={{ borderColor: color }} />
-      ) : dot ? (
-        <div className="h-3 w-3 shrink-0 rounded-full" style={{ background: color }} />
+    <div className="flex items-start justify-between gap-2 rounded-2xl border border-[rgba(46,64,54,0.35)] bg-[rgba(26,26,26,0.4)] px-3 py-2">
+      <div className="min-w-0">
+        <span className="font-sans text-[10px] font-semibold uppercase tracking-widest text-[rgba(242,240,233,0.4)]">{label}</span>
+        {hint && <p className="mt-0.5 font-mono text-[9px] text-[rgba(242,240,233,0.3)]">{hint}</p>}
+      </div>
+      <span className="shrink-0 font-mono text-xs font-semibold text-cream">{value}</span>
+    </div>
+  );
+}
+
+function LegendItem({ color, label, dot }) {
+  return (
+    <div className="flex items-center gap-2 font-sans text-[10px] text-[rgba(242,240,233,0.6)]">
+      {dot ? (
+        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
       ) : (
-        <div
-          className="h-3 w-3 shrink-0 rounded-full border-2 border-white"
-          style={{ background: color }}
-        />
+        <div className="h-2.5 w-2.5 shrink-0 rounded-full border border-[rgba(242,240,233,0.5)]" style={{ background: color }} />
       )}
       <span>{label}</span>
     </div>
-  );
-}
-
-function LayerToggle({ color, label, checked, onChange }) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2 text-slate-300 transition hover:text-white">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-3 w-3"
-      />
-      <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
-      <span>{label}</span>
-    </label>
   );
 }
 
