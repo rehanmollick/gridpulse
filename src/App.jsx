@@ -75,43 +75,69 @@ const ERCOT_TIERS = [
   { label: "Emergency", max: Infinity, color: "#ef4444", bg: "#1a0000", border: "#7f1d1d", desc: "Emergency pricing — maximize dispatch" },
 ];
 
-// 35 battery cluster locations — ~120 batteries each = ~4,200 total
+// 35 battery cluster locations in suburban residential neighborhoods (~120 each = ~4,200 total).
+// Deliberately placed in single-family home areas — NOT on the UT campus or downtown.
 const BATTERY_CLUSTERS = [
-  { id: "bc01", lng: -97.7500, lat: 30.2890, zip: "78703", count: 120 },
-  { id: "bc02", lng: -97.7650, lat: 30.2850, zip: "78703", count: 115 },
-  { id: "bc03", lng: -97.7580, lat: 30.2710, zip: "78703", count: 128 },
-  { id: "bc04", lng: -97.7420, lat: 30.2920, zip: "78705", count: 122 },
-  { id: "bc05", lng: -97.7380, lat: 30.2850, zip: "78705", count: 110 },
-  { id: "bc06", lng: -97.7350, lat: 30.3010, zip: "78705", count: 118 },
-  { id: "bc07", lng: -97.7490, lat: 30.2640, zip: "78704", count: 125 },
-  { id: "bc08", lng: -97.7620, lat: 30.2570, zip: "78704", count: 119 },
-  { id: "bc09", lng: -97.7520, lat: 30.2490, zip: "78704", count: 112 },
-  { id: "bc10", lng: -97.7220, lat: 30.3110, zip: "78751", count: 130 },
-  { id: "bc11", lng: -97.7160, lat: 30.3050, zip: "78751", count: 116 },
-  { id: "bc12", lng: -97.7300, lat: 30.3220, zip: "78756", count: 125 },
-  { id: "bc13", lng: -97.7440, lat: 30.3260, zip: "78756", count: 120 },
-  { id: "bc14", lng: -97.7010, lat: 30.3300, zip: "78752", count: 122 },
-  { id: "bc15", lng: -97.6970, lat: 30.3410, zip: "78752", count: 114 },
-  { id: "bc16", lng: -97.7110, lat: 30.3160, zip: "78752", count: 118 },
-  { id: "bc17", lng: -97.7170, lat: 30.2650, zip: "78702", count: 120 },
-  { id: "bc18", lng: -97.7090, lat: 30.2700, zip: "78702", count: 124 },
-  { id: "bc19", lng: -97.7010, lat: 30.2580, zip: "78702", count: 116 },
-  { id: "bc20", lng: -97.6910, lat: 30.2790, zip: "78721", count: 108 },
-  { id: "bc21", lng: -97.6860, lat: 30.2650, zip: "78721", count: 112 },
-  { id: "bc22", lng: -97.7610, lat: 30.2200, zip: "78745", count: 118 },
-  { id: "bc23", lng: -97.7710, lat: 30.2100, zip: "78745", count: 122 },
-  { id: "bc24", lng: -97.7510, lat: 30.2050, zip: "78745", count: 115 },
-  { id: "bc25", lng: -97.8120, lat: 30.1800, zip: "78748", count: 110 },
-  { id: "bc26", lng: -97.8220, lat: 30.1700, zip: "78748", count: 106 },
-  { id: "bc27", lng: -97.8010, lat: 30.1650, zip: "78748", count: 116 },
-  { id: "bc28", lng: -97.7410, lat: 30.2690, zip: "78701", count: 128 },
-  { id: "bc29", lng: -97.7360, lat: 30.2760, zip: "78701", count: 124 },
-  { id: "bc30", lng: -97.7470, lat: 30.2780, zip: "78701", count: 118 },
-  { id: "bc31", lng: -97.7290, lat: 30.2840, zip: "78702", count: 112 },
-  { id: "bc32", lng: -97.7800, lat: 30.2400, zip: "78704", count: 120 },
-  { id: "bc33", lng: -97.7660, lat: 30.3010, zip: "78703", count: 124 },
-  { id: "bc34", lng: -97.6890, lat: 30.3110, zip: "78752", count: 112 },
-  { id: "bc35", lng: -97.7310, lat: 30.2450, zip: "78702", count: 116 },
+  // Tarrytown / West Austin (78703) — residential streets west of MoPac
+  { id: "bc01", lng: -97.7720, lat: 30.2960, zip: "78703", count: 122 },
+  { id: "bc02", lng: -97.7810, lat: 30.2880, zip: "78703", count: 115 },
+  { id: "bc03", lng: -97.7680, lat: 30.2820, zip: "78703", count: 129 },
+
+  // Hyde Park (78705) — north of campus, actual residential neighborhood
+  { id: "bc04", lng: -97.7390, lat: 30.3180, zip: "78705", count: 118 },
+  { id: "bc05", lng: -97.7440, lat: 30.3250, zip: "78705", count: 108 },
+  { id: "bc06", lng: -97.7350, lat: 30.3120, zip: "78705", count: 124 },
+
+  // Rosedale / Brentwood (78756) — quiet suburban streets
+  { id: "bc07", lng: -97.7480, lat: 30.3310, zip: "78756", count: 131 },
+  { id: "bc08", lng: -97.7550, lat: 30.3390, zip: "78756", count: 119 },
+  { id: "bc09", lng: -97.7420, lat: 30.3420, zip: "78756", count: 113 },
+
+  // North Loop / Crestview (78751) — residential
+  { id: "bc10", lng: -97.7260, lat: 30.3220, zip: "78751", count: 126 },
+  { id: "bc11", lng: -97.7180, lat: 30.3150, zip: "78751", count: 117 },
+
+  // Windsor Park (78752) — suburban east side
+  { id: "bc12", lng: -97.7080, lat: 30.3350, zip: "78752", count: 122 },
+  { id: "bc13", lng: -97.6990, lat: 30.3440, zip: "78752", count: 114 },
+  { id: "bc14", lng: -97.7150, lat: 30.3480, zip: "78752", count: 120 },
+
+  // South Congress / Travis Heights (78704) — residential south of the river
+  { id: "bc15", lng: -97.7560, lat: 30.2440, zip: "78704", count: 125 },
+  { id: "bc16", lng: -97.7660, lat: 30.2360, zip: "78704", count: 119 },
+  { id: "bc17", lng: -97.7480, lat: 30.2360, zip: "78704", count: 112 },
+
+  // East Austin residential streets (78702)
+  { id: "bc18", lng: -97.7110, lat: 30.2580, zip: "78702", count: 120 },
+  { id: "bc19", lng: -97.7030, lat: 30.2670, zip: "78702", count: 128 },
+  { id: "bc20", lng: -97.7180, lat: 30.2720, zip: "78702", count: 116 },
+
+  // East Austin further east (78721)
+  { id: "bc21", lng: -97.6930, lat: 30.2790, zip: "78721", count: 108 },
+  { id: "bc22", lng: -97.6850, lat: 30.2660, zip: "78721", count: 113 },
+
+  // South Manchaca / Slaughter area (78745) — classic suburban grid
+  { id: "bc23", lng: -97.7700, lat: 30.2200, zip: "78745", count: 122 },
+  { id: "bc24", lng: -97.7820, lat: 30.2090, zip: "78745", count: 118 },
+  { id: "bc25", lng: -97.7590, lat: 30.2060, zip: "78745", count: 126 },
+
+  // Manchaca / Slaughter Creek (78748) — far south suburbs
+  { id: "bc26", lng: -97.8080, lat: 30.1860, zip: "78748", count: 110 },
+  { id: "bc27", lng: -97.8190, lat: 30.1750, zip: "78748", count: 106 },
+  { id: "bc28", lng: -97.7990, lat: 30.1680, zip: "78748", count: 117 },
+
+  // Southwest Austin (78749) — Circle C / Westgate suburbs
+  { id: "bc29", lng: -97.8410, lat: 30.2260, zip: "78749", count: 124 },
+  { id: "bc30", lng: -97.8530, lat: 30.2150, zip: "78749", count: 119 },
+
+  // Northwest Austin (78750) — Anderson Mill suburbs
+  { id: "bc31", lng: -97.7910, lat: 30.3870, zip: "78750", count: 130 },
+  { id: "bc32", lng: -97.8050, lat: 30.3760, zip: "78750", count: 121 },
+
+  // Crestview / St John's (78757) — dense single-family
+  { id: "bc33", lng: -97.7410, lat: 30.3560, zip: "78757", count: 127 },
+  { id: "bc34", lng: -97.7520, lat: 30.3650, zip: "78757", count: 114 },
+  { id: "bc35", lng: -97.7310, lat: 30.3610, zip: "78757", count: 120 },
 ];
 
 // Approximate crowd dispersal routes per venue (following real Austin roads)
@@ -350,13 +376,27 @@ function buildDispatchPayload(event, batteriesNeeded, preChargeBy, ercotPrice) {
   };
 }
 
-// GeoJSON for battery cluster dots — color driven by active state
+// Geographic radius in meters for each cluster based on battery count.
+// A cluster of ~120 batteries covers roughly an 800m-radius neighborhood.
+// Range: 60 batteries → 200m, 140 batteries → 900m (4.5x size spread)
+function clusterRadiusM(count) {
+  return Math.round(200 + (count - 60) * ((900 - 200) / (140 - 60)));
+}
+
+// GeoJSON for battery cluster dots — color and radius driven by active state
 function buildClustersGeoJSON(activatedSet) {
   return {
     type: "FeatureCollection",
     features: BATTERY_CLUSTERS.map((c) => ({
       type: "Feature",
-      properties: { id: c.id, zip: c.zip, count: c.count, active: activatedSet.has(c.id) },
+      properties: {
+        id: c.id,
+        zip: c.zip,
+        count: c.count,
+        active: activatedSet.has(c.id),
+        // Geographic radius so circles represent real neighborhood coverage
+        radiusM: clusterRadiusM(c.count),
+      },
       geometry: { type: "Point", coordinates: [c.lng, c.lat] },
     })),
   };
@@ -417,15 +457,39 @@ function loadEventModel() {
 // APP COMPONENT
 // =====================================================================
 
+function formatDateLabel(dateKey) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short", month: "short", day: "numeric", year: "numeric",
+  }).format(new Date(dateKey));
+}
+
 function App() {
   const events = useMemo(() => loadEventModel(), []);
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
-  const venueMarkerRef = useRef(null);
   const animTimers = useRef([]);
+  const activatedClustersRef = useRef(new Set());
+  const dispatchEventIdRef = useRef(null);
+
+  // Group all events by calendar date
+  const eventsByDate = useMemo(() => {
+    const map = new Map();
+    events.forEach((e) => {
+      const key = e.startAt.toDateString();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(e);
+    });
+    return map;
+  }, [events]);
+
+  // Sorted list of unique date keys
+  const dateList = useMemo(
+    () => Array.from(eventsByDate.keys()).sort((a, b) => new Date(a) - new Date(b)),
+    [eventsByDate]
+  );
 
   const [tab, setTab] = useState("dashboard");
-  const [selectedId, setSelectedId] = useState(events[0]?.id ?? "");
+  const [selectedDate, setSelectedDate] = useState(() => dateList[0] ?? "");
   const [dispatchBrief, setDispatchBrief] = useState("");
   const [briefLoading, setBriefLoading] = useState(false);
   const [briefError, setBriefError] = useState("");
@@ -435,64 +499,81 @@ function App() {
   const [ercotPrice, setErcotPrice] = useState(52);
   const [ercotIsSimulated, setErcotIsSimulated] = useState(true);
   const [dispatchHistory, setDispatchHistory] = useState([]);
-  const [activatedClusters, setActivatedClusters] = useState(new Set());
   const [activatingCount, setActivatingCount] = useState(0);
   const [showDispatchCard, setShowDispatchCard] = useState(false);
   const [layerVis, setLayerVis] = useState({
     batteryClusters: true,
     demandZones: true,
-    dispersalRoutes: true,
   });
+  const [legendPos, setLegendPos] = useState({ x: 0, y: 0 });
+
+  function handleLegendMouseDown(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    let lastX = e.clientX;
+    let lastY = e.clientY;
+    const onMove = (ev) => {
+      const dx = ev.clientX - lastX;
+      const dy = ev.clientY - lastY;
+      lastX = ev.clientX;
+      lastY = ev.clientY;
+      setLegendPos((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }
 
   const rampTargetRef = useRef(null);
   const rampStartRef = useRef(null);
   const rampInitRef = useRef(52);
 
-  const selectedEvent = useMemo(
-    () => events.find((e) => e.id === selectedId) ?? events[0],
-    [events, selectedId]
+  // All events on the selected date — this replaces the single selectedEvent concept
+  const eventsOnDate = useMemo(
+    () => eventsByDate.get(selectedDate) ?? [],
+    [eventsByDate, selectedDate]
   );
 
-  const overlaps = useMemo(() => {
-    if (!selectedEvent) return [];
-    return events
-      .filter((e) => e.id !== selectedEvent.id)
-      .filter((e) => e.startAt < selectedEvent.endAt && e.endAt > selectedEvent.startAt)
-      .slice(0, 6);
-  }, [events, selectedEvent]);
+  // All unique ZIPs affected by any event on this date
+  const allAffectedZips = useMemo(
+    () => [...new Set(eventsOnDate.flatMap((e) => e.affectedZips))],
+    [eventsOnDate]
+  );
 
+  // Aggregate stats across all events on the selected date
   const stats = useMemo(() => {
-    if (!selectedEvent) {
+    if (eventsOnDate.length === 0) {
       return { projectedMW: 0, batteriesNeeded: 0, preChargeBy: "-", revenueEstimate: 0, spreadPerBattery: 0 };
     }
-    const projectedMW = getProjectedMW(selectedEvent);
-    const batteriesNeeded = getRealisticBatteries(selectedEvent);
-    const preChargeBy = subtractMinutes(selectedEvent.endTime, 90);
+    const projectedMW =
+      Math.round(eventsOnDate.reduce((s, e) => s + getProjectedMW(e), 0) * 10) / 10;
+    // Cap combined batteries at fleet size
+    const batteriesNeeded = Math.min(
+      FLEET_SIZE,
+      eventsOnDate.reduce((s, e) => s + getRealisticBatteries(e), 0)
+    );
+    // Pre-charge deadline = 90 min before the EARLIEST event ending that day
+    const earliest = eventsOnDate.reduce((a, e) => (!a || e.endAt < a.endAt ? e : a), null);
+    const preChargeBy = earliest ? subtractMinutes(earliest.endTime, 90) : "-";
     const spread = getSpreadPerBattery(ercotPrice);
-    return {
-      projectedMW,
-      batteriesNeeded,
-      preChargeBy,
-      revenueEstimate: batteriesNeeded * spread,
-      spreadPerBattery: spread,
-    };
-  }, [selectedEvent, ercotPrice]);
+    return { projectedMW, batteriesNeeded, preChargeBy, revenueEstimate: batteriesNeeded * spread, spreadPerBattery: spread };
+  }, [eventsOnDate, ercotPrice]);
 
   const kpi = useMemo(() => {
-    if (!selectedEvent) return { upcoming24h: 0, totalToday: 0, projectedTodayRevenue: 0 };
-    const now = selectedEvent.startAt;
-    const dayKey = now.toDateString();
-    const in24h = events.filter(
-      (e) => e.startAt >= now && e.startAt <= new Date(now.getTime() + 86400000)
-    );
-    const sameDay = events.filter((e) => e.startAt.toDateString() === dayKey);
+    if (eventsOnDate.length === 0) return { eventsOnDate: 0, upcomingDates: 0, projectedRevenue: 0 };
+    const refDate = eventsOnDate[0].startAt;
+    // How many distinct dates with events are coming up in the next 7 days
+    const upcomingDates = dateList.filter((dk) => {
+      const d = new Date(dk);
+      return d >= refDate && d <= new Date(refDate.getTime() + 7 * 86400000);
+    }).length;
     const spread = getSpreadPerBattery(ercotPrice);
-    const projectedTodayRevenue = sameDay.reduce(
-      (acc, e) => acc + getRealisticBatteries(e) * spread,
-      0
-    );
-    return { upcoming24h: in24h.length, totalToday: sameDay.length, projectedTodayRevenue };
-  }, [events, selectedEvent, ercotPrice]);
+    const projectedRevenue = eventsOnDate.reduce((acc, e) => acc + getRealisticBatteries(e) * spread, 0);
+    return { eventsOnDate: eventsOnDate.length, upcomingDates, projectedRevenue };
+  }, [eventsOnDate, dateList, ercotPrice]);
 
   // ===== MAP INITIALIZATION =====
   useEffect(() => {
@@ -510,6 +591,55 @@ function App() {
     mapRef.current = map;
 
     map.on("load", () => {
+      // --- Venue marker as Mapbox circle layer (always correctly positioned) ---
+      map.addSource("venue", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      // Outer halo
+      map.addLayer({
+        id: "venue-halo",
+        type: "circle",
+        source: "venue",
+        paint: {
+          "circle-radius": 28,
+          "circle-color": "#ef4444",
+          "circle-opacity": 0.2,
+          "circle-blur": 0.6,
+        },
+      });
+      // Inner dot
+      map.addLayer({
+        id: "venue-dot",
+        type: "circle",
+        source: "venue",
+        paint: {
+          "circle-radius": 11,
+          "circle-color": ["case", ["get", "confirmed"], "#22c55e", "#ef4444"],
+          "circle-opacity": 0.95,
+          "circle-stroke-color": "white",
+          "circle-stroke-width": 2.5,
+          "circle-blur": 0,
+        },
+      });
+
+      // Venue click popup
+      const mapboxgl = getMapbox();
+      const venuePopup = new mapboxgl.Popup({ offset: 20, closeButton: true });
+      map.on("click", "venue-dot", (e) => {
+        const p = e.features[0].properties;
+        venuePopup
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div class="map-popup"><strong>${p.venue}</strong><br/>` +
+            `${p.eventName}<br/>Ends ~${p.endTime} · ${p.attendance} expected<br/>` +
+            `Temp: ${p.tempF}°F</div>`
+          )
+          .addTo(map);
+      });
+      map.on("mouseenter", "venue-dot", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "venue-dot", () => { map.getCanvas().style.cursor = ""; });
+
       // --- Battery cluster dots ---
       map.addSource("battery-clusters", {
         type: "geojson",
@@ -520,11 +650,21 @@ function App() {
         type: "circle",
         source: "battery-clusters",
         paint: {
-          "circle-color": ["case", ["get", "active"], "#22c55e", "#4b5563"],
-          "circle-radius": ["case", ["get", "active"], 8, 6],
-          "circle-opacity": ["case", ["get", "active"], 1.0, 0.75],
-          "circle-stroke-color": ["case", ["get", "active"], "#16a34a", "#374151"],
+          // Green when dispatched, gray when standby — color only, never size
+          "circle-color": ["case", ["get", "active"], "#22c55e", "#9ca3af"],
+          // Geographic radius: scales with zoom so each circle always covers the same
+          // real-world area. Factor = px/m at Austin latitude (~30.3°).
+          // At zoom 10: ~0.0152 px/m → at zoom 14: ~0.2432 px/m (doubles every zoom level)
+          "circle-radius": [
+            "interpolate", ["exponential", 2], ["zoom"],
+            10, ["*", ["get", "radiusM"], 0.0152],
+            14, ["*", ["get", "radiusM"], 0.2432],
+          ],
+          // 50% opacity for both states — map always visible underneath
+          "circle-opacity": 0.5,
+          "circle-stroke-color": ["case", ["get", "active"], "#16a34a", "#6b7280"],
           "circle-stroke-width": 1.5,
+          "circle-blur": 0.2,
         },
       });
 
@@ -571,7 +711,14 @@ function App() {
         type: "symbol",
         source: "demand-zones",
         layout: {
-          "text-field": ["concat", ["get", "zip"], "\n+", ["get", "loadPct"], "%\n", ["get", "batteries"], " batt."],
+          // Label shows ZIP, the demand surge %, and how many Base Power batteries
+          // are deployed in that neighborhood ready to absorb the spike
+          "text-field": [
+            "concat",
+            "ZIP ", ["get", "zip"], "\n",
+            "+", ["get", "loadPct"], "% surge expected\n",
+            ["get", "batteries"], " batteries deployed",
+          ],
           "text-size": 10,
           "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
           "text-anchor": "center",
@@ -580,139 +727,123 @@ function App() {
         paint: {
           "text-color": "#f1f5f9",
           "text-halo-color": "#0a0e1a",
-          "text-halo-width": 1.2,
+          "text-halo-width": 1.5,
         },
       });
 
-      // ZIP zone click popup
+      // ZIP zone click popup — explains the numbers in plain language
       const zonePopup = new mapboxgl.Popup({ closeButton: true });
       map.on("click", "demand-zones-fill", (e) => {
         const p = e.features[0].properties;
-        const covered = p.batteries >= 80 ? "✓ Sufficient" : "⚠ Limited";
+        const covered = p.batteries >= 80 ? "✓ Sufficient coverage" : "⚠ Limited coverage";
         zonePopup
           .setLngLat(e.lngLat)
           .setHTML(
-            `<div class="map-popup"><strong>ZIP ${p.zip}</strong><br/>` +
-            `Post-event demand increase: <strong>+${p.loadPct}%</strong><br/>` +
-            `Base Power batteries staged: <strong>${p.batteries}</strong><br/>` +
-            `Coverage: <strong>${covered}</strong></div>`
+            `<div class="map-popup">` +
+            `<strong>ZIP ${p.zip} — Demand Forecast</strong><br/><br/>` +
+            `<strong>+${p.loadPct}% surge expected</strong><br/>` +
+            `When fans leave the venue and arrive home, AC units, TVs, and appliances all turn on at once — spiking this neighborhood's grid load ${p.loadPct}% above normal.<br/><br/>` +
+            `<strong>${p.batteries} Base Power batteries installed here</strong><br/>` +
+            `These are home batteries already sitting in customers' houses in this ZIP — idle right now. They don't do anything useful until a dispatch command is sent.<br/><br/>` +
+            `<strong>What dispatch does:</strong> sends a pre-charge command to all ${p.batteries} of these batteries, telling them to charge to 95% before the event ends. When the surge hits, they discharge into the home instead of drawing from the grid — capturing the price spread.<br/><br/>` +
+            `Coverage: ${covered}` +
+            `</div>`
           )
           .addTo(map);
       });
 
-      // --- Dispersal routes ---
-      map.addSource("dispersal-routes", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      map.addLayer({
-        id: "dispersal-routes-layer",
-        type: "line",
-        source: "dispersal-routes",
-        paint: {
-          "line-color": ["case", ["get", "active"], "#22c55e", "#f97316"],
-          "line-width": 2,
-          "line-opacity": 0.7,
-          "line-dasharray": [3, 3],
-        },
-      });
-      map.addLayer({
-        id: "dispersal-routes-labels",
-        type: "symbol",
-        source: "dispersal-routes",
-        layout: {
-          "text-field": ["get", "label"],
-          "text-size": 10,
-          "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
-          "symbol-placement": "line-center",
-          "text-offset": [0, -0.8],
-        },
-        paint: {
-          "text-color": "#fb923c",
-          "text-halo-color": "#0a0e1a",
-          "text-halo-width": 1.2,
-        },
-      });
-
-      // Route click popup
-      const routePopup = new mapboxgl.Popup({ closeButton: true });
-      map.on("click", "dispersal-routes-layer", (e) => {
-        const p = e.features[0].properties;
-        routePopup
-          .setLngLat(e.lngLat)
-          .setHTML(
-            `<div class="map-popup"><strong>Crowd Dispersal — ${p.label}</strong><br/>` +
-            `Est. vehicles post-game: 3,200–8,400<br/>` +
-            `Battery coverage: ${p.active ? "✓ Active" : "Standby"}</div>`
-          )
-          .addTo(map);
-      });
-
-      // --- Overlapping events ---
-      map.addSource("overlap-points", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      map.addLayer({
-        id: "overlap-layer",
-        type: "circle",
-        source: "overlap-points",
-        paint: {
-          "circle-color": "#22d3ee",
-          "circle-radius": 7,
-          "circle-opacity": 0.9,
-          "circle-stroke-color": "#0f172a",
-          "circle-stroke-width": 1.3,
-        },
-      });
+      // Overlap events are listed in the side panel — no map dots needed
     });
 
     return () => {
-      if (venueMarkerRef.current) { venueMarkerRef.current.remove(); venueMarkerRef.current = null; }
       map.remove();
       mapRef.current = null;
     };
   }, []);
 
-  // ===== UPDATE MAP WHEN EVENT SELECTED =====
-  const applyEventLayers = useCallback(
-    (event, currentOverlaps, currentStats) => {
+  // ===== SINGLE ATOMIC DATE-CHANGE EFFECT =====
+  // Handles reset + rebuild atomically whenever the selected date changes.
+  useEffect(() => {
+    if (eventsOnDate.length === 0) return;
+
+    // 1. Cancel timers and reset animation state
+    animTimers.current.forEach(clearTimeout);
+    animTimers.current = [];
+    dispatchEventIdRef.current = null;
+    activatedClustersRef.current = new Set();
+
+    // 2. Reset UI state
+    setDispatchConfirmed(false);
+    setDispatchPayload(null);
+    setDispatchBrief("");
+    setBriefError("");
+    setActivatingCount(0);
+    setShowDispatchCard(false);
+
+    // 3. Rebuild map for all events on this date
+    const build = () => {
       const map = mapRef.current;
       if (!map) return;
 
+      // Fly to center of all venues on this date
+      const avgLng = eventsOnDate.reduce((s, e) => s + e.lng, 0) / eventsOnDate.length;
+      const avgLat = eventsOnDate.reduce((s, e) => s + e.lat, 0) / eventsOnDate.length;
       map.flyTo({
-        center: [event.lng - 0.018, event.lat],
-        zoom: 12.5,
+        center: [avgLng - 0.018, avgLat],
+        zoom: eventsOnDate.length > 1 ? 11.8 : 12.5,
         speed: 0.65,
         curve: 1.2,
         duration: 1500,
       });
 
-      // Venue marker
-      if (venueMarkerRef.current) venueMarkerRef.current.remove();
-      const markerEl = document.createElement("div");
-      markerEl.className = "venue-marker pulsing";
-      const mapboxgl = getMapbox();
-      if (!mapboxgl) return;
-      const venuePopup = new mapboxgl.Popup({ offset: 25, closeButton: true }).setHTML(
-        `<div class="map-popup"><strong>${event.venue}</strong><br/>` +
-        `${event.name}<br/>Ends ~${event.endTime} · ${event.attendance.toLocaleString()} expected<br/>` +
-        `Temp: ${event.tempF}°F</div>`
-      );
-      venueMarkerRef.current = new mapboxgl.Marker({ element: markerEl })
-        .setLngLat([event.lng, event.lat])
-        .setPopup(venuePopup)
-        .addTo(map);
+      // Venue dots — one per event on the date
+      const venueSrc = map.getSource("venue");
+      if (venueSrc) {
+        venueSrc.setData({
+          type: "FeatureCollection",
+          features: eventsOnDate.map((ev) => ({
+            type: "Feature",
+            properties: {
+              venue: ev.venue,
+              eventName: ev.name,
+              endTime: ev.endTime,
+              attendance: ev.attendance.toLocaleString(),
+              tempF: ev.tempF,
+              confirmed: false,
+            },
+            geometry: { type: "Point", coordinates: [ev.lng, ev.lat] },
+          })),
+        });
+      }
 
-      // Demand zones
-      const demandFeatures = event.affectedZips
-        .map((zip, i) => {
-          const coords = ZIP_COORDS[zip];
-          if (!coords) return null;
+      // Battery clusters — all gray until dispatch
+      const clusterSrc = map.getSource("battery-clusters");
+      if (clusterSrc) clusterSrc.setData(buildClustersGeoJSON(new Set()));
+
+      // Demand zones — combine load from ALL events affecting each ZIP
+      const zipMap = new Map(); // zip -> {loadPct, batteries}
+      eventsOnDate.forEach((ev) => {
+        ev.affectedZips.forEach((zip, i) => {
           const tiers = ZIP_LOAD_PCT[zip] ?? [100, 70, 45];
           const loadPct = i < 2 ? tiers[0] : i < 4 ? tiers[1] : tiers[2];
+          const batteries =
+            BATTERY_CLUSTERS.filter((c) => c.zip === zip).reduce((s, c) => s + c.count, 0) ||
+            Math.round(getRealisticBatteries(ev) / ev.affectedZips.length);
+          if (zipMap.has(zip)) {
+            // Two events hitting same ZIP compounds the surge
+            const cur = zipMap.get(zip);
+            cur.loadPct = Math.min(280, cur.loadPct + Math.round(loadPct * 0.6));
+          } else {
+            zipMap.set(zip, { loadPct, batteries });
+          }
+        });
+      });
+
+      const demandFeatures = [...zipMap.entries()]
+        .map(([zip, { loadPct, batteries }]) => {
+          const coords = ZIP_COORDS[zip];
+          if (!coords) return null;
           const color = loadPct > 160 ? "#dc2626" : loadPct > 120 ? "#f97316" : loadPct > 80 ? "#eab308" : "#fef08a";
-          const batteries = BATTERY_CLUSTERS.filter((c) => c.zip === zip).reduce((s, c) => s + c.count, 0) || Math.round(currentStats.batteriesNeeded / event.affectedZips.length);
           return {
             type: "Feature",
             properties: { zip, loadPct, color, batteries },
@@ -723,73 +854,36 @@ function App() {
 
       const demandSrc = map.getSource("demand-zones");
       if (demandSrc) demandSrc.setData({ type: "FeatureCollection", features: demandFeatures });
+    };
 
-      // Dispersal routes
-      const routes = getRoutes(event.venue);
-      const routeFeatures = routes.map((r) => ({
-        type: "Feature",
-        properties: { label: r.label, active: false },
-        geometry: { type: "LineString", coordinates: r.coords },
-      }));
-      const routeSrc = map.getSource("dispersal-routes");
-      if (routeSrc) routeSrc.setData({ type: "FeatureCollection", features: routeFeatures });
-
-      // Overlap markers
-      const overlapFeatures = currentOverlaps.map((e) => ({
-        type: "Feature",
-        properties: { name: e.name },
-        geometry: { type: "Point", coordinates: [e.lng, e.lat] },
-      }));
-      const overlapSrc = map.getSource("overlap-points");
-      if (overlapSrc) overlapSrc.setData({ type: "FeatureCollection", features: overlapFeatures });
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!selectedEvent) return;
     const map = mapRef.current;
     if (!map) return;
-    const apply = () => applyEventLayers(selectedEvent, overlaps, stats);
-    if (map.isStyleLoaded()) apply();
-    else map.once("load", apply);
-  }, [selectedEvent, overlaps, applyEventLayers, stats]);
+    if (map.isStyleLoaded()) build();
+    else map.once("load", build);
+  }, [eventsOnDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ===== RESET ALL STATE WHEN EVENT CHANGES =====
-  useEffect(() => {
-    animTimers.current.forEach(clearTimeout);
-    animTimers.current = [];
-    setDispatchConfirmed(false);
-    setDispatchPayload(null);
-    setDispatchBrief("");
-    setBriefError("");
-    setActivatedClusters(new Set());
-    setActivatingCount(0);
-    setShowDispatchCard(false);
-
-    const map = mapRef.current;
-    if (map && map.isStyleLoaded()) {
-      // Reset cluster colors
-      const clusterSrc = map.getSource("battery-clusters");
-      if (clusterSrc) clusterSrc.setData(buildClustersGeoJSON(new Set()));
-    }
-  }, [selectedEvent?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ===== SYNC ACTIVATED CLUSTERS TO MAP =====
+  // Update venue dot colors when dispatch is confirmed
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    const src = map.getSource("battery-clusters");
-    if (src) src.setData(buildClustersGeoJSON(activatedClusters));
-  }, [activatedClusters]);
-
-  // ===== SYNC DISPATCH CONFIRMED STATE TO VENUE MARKER =====
-  useEffect(() => {
-    if (!venueMarkerRef.current) return;
-    venueMarkerRef.current.getElement().className = dispatchConfirmed
-      ? "venue-marker confirmed"
-      : "venue-marker pulsing";
-  }, [dispatchConfirmed]);
+    if (!map || !map.isStyleLoaded() || eventsOnDate.length === 0) return;
+    const src = map.getSource("venue");
+    if (!src) return;
+    src.setData({
+      type: "FeatureCollection",
+      features: eventsOnDate.map((ev) => ({
+        type: "Feature",
+        properties: {
+          venue: ev.venue,
+          eventName: ev.name,
+          endTime: ev.endTime,
+          attendance: ev.attendance.toLocaleString(),
+          tempF: ev.tempF,
+          confirmed: dispatchConfirmed,
+        },
+        geometry: { type: "Point", coordinates: [ev.lng, ev.lat] },
+      })),
+    });
+  }, [dispatchConfirmed, eventsOnDate]);
 
   // ===== LAYER VISIBILITY TOGGLES =====
   useEffect(() => {
@@ -800,8 +894,9 @@ function App() {
     set("battery-clusters-layer", vis(layerVis.batteryClusters));
     set("demand-zones-fill", vis(layerVis.demandZones));
     set("demand-zones-labels", vis(layerVis.demandZones));
-    set("dispersal-routes-layer", vis(layerVis.dispersalRoutes));
-    set("dispersal-routes-labels", vis(layerVis.dispersalRoutes));
+    // Venue layers always visible
+    set("venue-halo", "visible");
+    set("venue-dot", "visible");
   }, [layerVis]);
 
   // ===== ERCOT PRICE — try real API, fall back to simulated =====
@@ -851,11 +946,15 @@ function App() {
     rampInitRef.current = ercotPrice;
     rampTargetRef.current = 90 + Math.random() * 130;
     rampStartRef.current = Date.now();
-  }, [selectedEvent?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ===== DISPATCH ANIMATION =====
-  function runDispatchAnimation(affectedZips, batteriesNeeded, venue) {
+  function runDispatchAnimation(affectedZips, batteriesNeeded, dateKey) {
+    const eventId = dateKey;
     const map = mapRef.current;
+    // Stamp which event this animation belongs to
+    dispatchEventIdRef.current = eventId;
+
     const affected = BATTERY_CLUSTERS.filter((c) => affectedZips.includes(c.zip));
     const total = Math.max(1, affected.length);
     const interval = Math.floor(3000 / total);
@@ -863,7 +962,12 @@ function App() {
     // Phase 1 (0–3s): activate clusters sequentially, near venue first
     affected.forEach((cluster, i) => {
       const t = setTimeout(() => {
-        setActivatedClusters((prev) => new Set([...prev, cluster.id]));
+        // Abort if the user switched to a different event
+        if (dispatchEventIdRef.current !== eventId) return;
+        // Update the ref and push directly to Mapbox — no React state, no race
+        activatedClustersRef.current.add(cluster.id);
+        const src = mapRef.current?.getSource("battery-clusters");
+        if (src) src.setData(buildClustersGeoJSON(activatedClustersRef.current));
         setActivatingCount(Math.min(batteriesNeeded, Math.round((batteriesNeeded * (i + 1)) / total)));
       }, i * interval);
       animTimers.current.push(t);
@@ -871,51 +975,47 @@ function App() {
 
     // Phase 2 (3s): turn dispersal route lines green
     const t3 = setTimeout(() => {
+      if (dispatchEventIdRef.current !== eventId) return;
       if (!map || !map.isStyleLoaded()) return;
-      const src = map.getSource("dispersal-routes");
-      if (src) {
-        const routes = getRoutes(venue);
-        src.setData({
-          type: "FeatureCollection",
-          features: routes.map((r) => ({
-            type: "Feature",
-            properties: { label: r.label, active: true },
-            geometry: { type: "LineString", coordinates: r.coords },
-          })),
-        });
-      }
+      // Routes removed — nothing to update at phase 2
     }, 3200);
     animTimers.current.push(t3);
 
     // Phase 3 (5.5s): show floating dispatch card
-    const t5 = setTimeout(() => setShowDispatchCard(true), 5500);
+    const t5 = setTimeout(() => {
+      if (dispatchEventIdRef.current !== eventId) return;
+      setShowDispatchCard(true);
+    }, 5500);
     animTimers.current.push(t5);
   }
 
   // ===== GROQ DISPATCH BRIEF =====
   function getMockDispatchBrief() {
-    if (!selectedEvent) return "";
-    const chargeTime = subtractMinutes(selectedEvent.endTime, 100);
-    const nearZips = selectedEvent.affectedZips.slice(0, 2).join(", ");
+    if (eventsOnDate.length === 0) return "";
+    const earliest = eventsOnDate.reduce((a, e) => (!a || e.endAt < a.endAt ? e : a), null);
+    const chargeTime = subtractMinutes(earliest.endTime, 100);
+    const nearZip = allAffectedZips[0];
+    const maxTemp = Math.max(...eventsOnDate.map((e) => e.tempF));
     const tempNote =
-      selectedEvent.tempF > 90
-        ? `At ${selectedEvent.tempF}°F, AC load adds ~25% to projected demand — increase to 97% charge target.`
-        : `At ${selectedEvent.tempF}°F, standard AC load expected — 95% target is sufficient.`;
-    const riskNote =
-      overlaps.length > 0
-        ? `Risk: ${overlaps.length} concurrent UT event(s) active — reserve 12% capacity for overlap demand spike.`
+      maxTemp > 90
+        ? `At ${maxTemp}°F, AC load adds ~25% to projected demand — target 97% charge.`
+        : `At ${maxTemp}°F, standard AC load expected — 95% charge target sufficient.`;
+    const multiNote =
+      eventsOnDate.length > 1
+        ? `Risk: ${eventsOnDate.length} simultaneous events — combined ZIP demand may overlap; monitor for fleet capacity ceiling.`
         : "Risk: Monitor I-35 corridor for unexpected crowd rerouting in the discharge window.";
+    const eventList = eventsOnDate.map((e) => `${e.name} at ${e.venue} (ends ${e.endTime})`).join("; ");
     return (
-      `1. PRE-CHARGE: Begin pre-charge at ${chargeTime} — 100 min before projected ${selectedEvent.endTime} end.\n` +
-      `2. TARGET: Charge ${stats.batteriesNeeded.toLocaleString()} batteries to 95% capacity across ZIPs ${selectedEvent.affectedZips.join(", ")}.\n` +
-      `3. PRIORITY: Stage ZIPs ${nearZips} first — closest to ${selectedEvent.venue}, highest initial load.\n` +
+      `1. PRE-CHARGE: Begin at ${chargeTime} — 100 min before earliest event end.\n` +
+      `2. TARGET: Charge ${stats.batteriesNeeded.toLocaleString()} batteries to 95% across ZIPs ${allAffectedZips.join(", ")}.\n` +
+      `3. PRIORITY: Stage ZIP ${nearZip} first — highest projected surge from nearest venue.\n` +
       `4. WEATHER: ${tempNote}\n` +
-      `5. ${riskNote}`
+      `5. ${multiNote}\n\nEvents covered: ${eventList}`
     );
   }
 
   async function requestDispatchBrief() {
-    if (!selectedEvent) return;
+    if (eventsOnDate.length === 0) return;
     setBriefLoading(true);
     setBriefError("");
     setDispatchBrief("");
@@ -927,7 +1027,11 @@ function App() {
       return;
     }
     try {
-      const chargeTime = subtractMinutes(selectedEvent.endTime, 100);
+      const earliest = eventsOnDate.reduce((a, e) => (!a || e.endAt < a.endAt ? e : a), null);
+      const chargeTime = subtractMinutes(earliest.endTime, 100);
+      const eventSummaries = eventsOnDate
+        .map((e) => `- ${e.name} (${e.category}) at ${e.venue}, ends ${e.endTime}, ${e.attendance.toLocaleString()} expected, ${e.tempF}°F`)
+        .join("\n");
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
@@ -937,28 +1041,21 @@ function App() {
             {
               role: "system",
               content:
-                "You are an AI dispatch system for Base Power, a distributed battery company in Austin, TX. " +
-                "Generate a precise operator dispatch brief in exactly 5 numbered points. Be specific — use exact times, percentages, and ZIP codes.\n\n" +
-                "Format strictly as:\n" +
-                "1. PRE-CHARGE: [exact start time and why]\n" +
-                "2. TARGET: [exact charge level % and battery count]\n" +
-                "3. PRIORITY: [which ZIP codes to prioritize first and why]\n" +
-                "4. WEATHER: [temperature impact on AC load — if >85°F, mention multiplier]\n" +
-                "5. RISK: [one specific risk factor to monitor with a number if possible]",
+                "You are an AI dispatch system for Base Power in Austin, TX. " +
+                "Generate a precise multi-event operator dispatch brief in exactly 5 numbered points.\n\n" +
+                "Format:\n1. PRE-CHARGE: [exact time]\n2. TARGET: [charge % and total batteries]\n" +
+                "3. PRIORITY: [ZIP order and reasoning]\n4. WEATHER: [temp impact]\n5. RISK: [key risk]",
             },
             {
               role: "user",
               content:
-                `Event: ${selectedEvent.name} (${selectedEvent.category})\n` +
-                `Venue: ${selectedEvent.venue}\n` +
-                `Start: ${formatDateTime(selectedEvent.startAt)} | Projected end: ${selectedEvent.endTime}\n` +
-                `Attendance: ${selectedEvent.attendance.toLocaleString()} | Temp: ${selectedEvent.tempF}°F\n` +
-                `Batteries to dispatch: ${stats.batteriesNeeded} (fleet: ${FLEET_SIZE.toLocaleString()} total)\n` +
-                `Affected ZIPs (nearest first): ${selectedEvent.affectedZips.join(", ")}\n` +
-                `Suggested pre-charge start: ${chargeTime}\n` +
-                `Current ERCOT price: $${ercotPrice.toFixed(0)}/MWh\n` +
-                `Est. revenue: $${stats.revenueEstimate.toLocaleString()} ($${stats.spreadPerBattery}/battery)\n` +
-                `Concurrent events: ${overlaps.length}`,
+                `Date: ${formatDateLabel(selectedDate)}\n` +
+                `Events on this date (${eventsOnDate.length} total):\n${eventSummaries}\n\n` +
+                `Total batteries to dispatch: ${stats.batteriesNeeded} of ${FLEET_SIZE.toLocaleString()}\n` +
+                `All affected ZIPs: ${allAffectedZips.join(", ")}\n` +
+                `Pre-charge start: ${chargeTime}\n` +
+                `ERCOT price: $${ercotPrice.toFixed(0)}/MWh\n` +
+                `Est. revenue: $${stats.revenueEstimate.toLocaleString()} ($${stats.spreadPerBattery}/battery)`,
             },
           ],
           temperature: 0.3,
@@ -976,14 +1073,15 @@ function App() {
 
   // ===== CONFIRM DISPATCH =====
   async function confirmDispatch() {
-    if (!selectedEvent) return;
+    if (eventsOnDate.length === 0) return;
     setMorphLoading(true);
-    const payload = buildDispatchPayload(
-      selectedEvent,
-      stats.batteriesNeeded,
-      stats.preChargeBy,
-      ercotPrice
-    );
+    // Build payload covering all events on this date
+    const earliest = eventsOnDate.reduce((a, e) => (!a || e.endAt < a.endAt ? e : a), null);
+    const payload = buildDispatchPayload(earliest, stats.batteriesNeeded, stats.preChargeBy, ercotPrice);
+    // Override zip_codes and event field to cover all events
+    payload.zip_codes = allAffectedZips;
+    payload.events = eventsOnDate.map((e) => ({ name: e.name, venue: e.venue, end: e.endTime }));
+    delete payload.event; // replaced by .events array
     try {
       const morphKey = import.meta.env.VITE_MORPH_API_KEY ?? "";
       if (morphKey) {
@@ -1009,20 +1107,21 @@ function App() {
       setDispatchConfirmed(true);
       setDispatchHistory((prev) => [
         {
-          id: `${selectedEvent.id}-${Date.now()}`,
+          id: `${selectedDate}-${Date.now()}`,
           dispatchId: payload.dispatch_id,
-          name: selectedEvent.name,
-          venue: selectedEvent.venue,
+          date: formatDateLabel(selectedDate),
+          eventCount: eventsOnDate.length,
+          eventNames: eventsOnDate.map((e) => e.name).join(", "),
           when: new Date(),
           batteries: stats.batteriesNeeded,
           spreadPerBattery: stats.spreadPerBattery,
           totalCapture: stats.revenueEstimate,
           projectedMW: stats.projectedMW,
-          zips: selectedEvent.affectedZips,
+          zips: allAffectedZips,
         },
         ...prev,
       ]);
-      runDispatchAnimation(selectedEvent.affectedZips, stats.batteriesNeeded, selectedEvent.venue);
+      runDispatchAnimation(allAffectedZips, stats.batteriesNeeded, selectedDate);
     } catch (err) {
       console.error("Dispatch error:", err);
     } finally {
@@ -1031,7 +1130,7 @@ function App() {
   }
 
   // ===== RENDER =====
-  if (!selectedEvent) {
+  if (dateList.length === 0) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0a0e1a] text-slate-200">
         No event data available.
@@ -1075,44 +1174,53 @@ function App() {
         <div ref={mapNodeRef} className="absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#040814]/60 via-transparent to-[#040814]/70" />
 
-        {/* MAP LEGEND */}
-        <div className="absolute bottom-4 left-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur">
-          <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">Map Legend</p>
-          <div className="space-y-1.5">
-            <LegendItem color="#f43f5e" label="Event venue (pulsing)" />
-            <LegendItem color="#4b5563" label="Battery cluster — standby" dot />
-            <LegendItem color="#22c55e" label="Battery cluster — pre-charging" dot />
-            <LegendItem color="#dc2626" label="High demand zone (>160%)" dot />
-            <LegendItem color="#f97316" label="Medium demand zone" dot />
-            <LegendItem color="#eab308" label="Moderate demand zone" dot />
-            <LegendItem color="#f97316" label="Crowd dispersal route" line />
+        {/* MAP LEGEND — bottom-right, draggable */}
+        <div
+          className="absolute bottom-4 right-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur select-none"
+          style={{ transform: `translate(${legendPos.x}px, ${legendPos.y}px)` }}
+        >
+          <p
+            className="mb-2 font-semibold uppercase tracking-wide text-slate-400 cursor-grab active:cursor-grabbing"
+            onMouseDown={handleLegendMouseDown}
+          >
+            Map Legend
+          </p>
+          <div className="space-y-2">
+            <LegendItem color="#ef4444" label="Event venue" />
+            <div className="border-t border-slate-700/60 pt-1.5 mt-1">
+              <p className="text-slate-500 mb-1 uppercase tracking-wide" style={{fontSize:"9px"}}>Base Power batteries (per neighborhood)</p>
+              <LegendItem color="#9ca3af" label="Installed in homes — idle, no command sent" dot />
+              <LegendItem color="#22c55e" label="Pre-charging — dispatch command sent" dot />
+            </div>
+            <div className="border-t border-slate-700/60 pt-1.5 mt-1">
+              <p className="text-slate-500 mb-1 uppercase tracking-wide" style={{fontSize:"9px"}}>Post-event grid demand surge (click for details)</p>
+              <LegendItem color="#dc2626" label=">160% above normal — heavy load" dot />
+              <LegendItem color="#f97316" label="120–160% — elevated load" dot />
+              <LegendItem color="#eab308" label="80–120% — moderate load" dot />
+            </div>
           </div>
         </div>
 
-        {/* LAYER TOGGLES */}
-        <div className="absolute right-4 top-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur">
-          <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">Map Layers</p>
-          <div className="space-y-2">
-            <LayerToggle
-              color="#22c55e"
-              label="Battery clusters"
-              checked={layerVis.batteryClusters}
-              onChange={(v) => setLayerVis((p) => ({ ...p, batteryClusters: v }))}
-            />
-            <LayerToggle
-              color="#f97316"
-              label="Demand zones"
-              checked={layerVis.demandZones}
-              onChange={(v) => setLayerVis((p) => ({ ...p, demandZones: v }))}
-            />
-            <LayerToggle
-              color="#fb923c"
-              label="Dispersal routes"
-              checked={layerVis.dispersalRoutes}
-              onChange={(v) => setLayerVis((p) => ({ ...p, dispersalRoutes: v }))}
-            />
+        {/* LAYER TOGGLES — only on Dispatch tab so they don't overlap the Dashboard panels */}
+        {tab === "map" && (
+          <div className="absolute right-4 top-4 z-20 rounded-lg border border-slate-700 bg-[#0d1426]/90 p-3 text-xs backdrop-blur">
+            <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">Map Layers</p>
+            <div className="space-y-2">
+              <LayerToggle
+                color="#22c55e"
+                label="Battery clusters"
+                checked={layerVis.batteryClusters}
+                onChange={(v) => setLayerVis((p) => ({ ...p, batteryClusters: v }))}
+              />
+              <LayerToggle
+                color="#f97316"
+                label="Demand zones"
+                checked={layerVis.demandZones}
+                onChange={(v) => setLayerVis((p) => ({ ...p, demandZones: v }))}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* DISPATCH ACTIVE FLOATING CARD */}
         {showDispatchCard && dispatchPayload && (
@@ -1129,53 +1237,65 @@ function App() {
         {/* ===== DASHBOARD TAB ===== */}
         {tab === "dashboard" && (
           <>
-            <aside className="absolute left-4 top-4 z-20 w-[360px] rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
+            <aside className="absolute left-4 top-4 z-20 w-[360px] max-h-[calc(100vh-120px)] overflow-y-auto rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
                 Event Analysis
               </h2>
               <p className="mt-0.5 text-xs text-slate-400">
-                Select a UT Austin event to see the projected grid impact
+                Pick a date — all UT events that day load together
               </p>
+
+              {/* Date selector */}
               <div className="mt-3">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  UT Austin Event
+                  Game Date
                 </label>
                 <select
-                  value={selectedEvent.id}
-                  onChange={(e) => setSelectedId(e.target.value)}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full rounded-md border border-slate-600 bg-[#111a30] px-3 py-2 text-sm text-slate-100 outline-none transition hover:border-[#3b82f6] focus:border-[#3b82f6]"
                 >
-                  {events.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
-                  ))}
+                  {dateList.map((dk) => {
+                    const count = eventsByDate.get(dk)?.length ?? 0;
+                    return (
+                      <option key={dk} value={dk}>
+                        {formatDateLabel(dk)}{count > 1 ? ` — ${count} events` : ""}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
-              <div className="mt-3 rounded-lg border border-slate-700 bg-[#0b1223] p-3 text-sm">
-                <p className="font-semibold text-slate-100">{selectedEvent.venue}</p>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  {formatDateTime(selectedEvent.startAt)} · ends ~{selectedEvent.endTime}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-300">
-                  {selectedEvent.category} · {selectedEvent.attendance.toLocaleString()} expected · {selectedEvent.tempF}°F
-                </p>
+              {/* Event list for selected date — scrollable so stats stay visible */}
+              <div className="mt-3 max-h-[200px] overflow-y-auto space-y-1.5 pr-0.5">
+                {eventsOnDate.map((ev) => (
+                  <div key={ev.id} className="rounded-lg border border-slate-700 bg-[#0b1223] px-3 py-2 text-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold text-slate-100 leading-tight">{ev.name}</p>
+                      <span className="text-xs text-slate-500 shrink-0 mt-0.5">{ev.category}</span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-slate-400">{ev.venue}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatDateTime(ev.startAt)} · ends ~{ev.endTime} · {ev.attendance.toLocaleString()} expected · {ev.tempF}°F
+                    </p>
+                  </div>
+                ))}
               </div>
 
+              {/* Aggregated stats for the whole date */}
               <div className="mt-3 space-y-2 text-sm">
                 <StatRow
-                  label="Estimated grid demand increase"
+                  label="Combined demand increase"
                   value={`${stats.projectedMW.toFixed(1)} MW`}
-                  hint="Austin-wide load from crowd dispersal & AC use"
+                  hint="Sum across all events on this date"
                 />
                 <StatRow
-                  label="Batteries to dispatch"
+                  label="Total batteries to dispatch"
                   value={`${stats.batteriesNeeded.toLocaleString()} of ${FLEET_SIZE.toLocaleString()}`}
                 />
                 <StatRow label="Pre-charge by" value={stats.preChargeBy} />
                 <StatRow
-                  label="Est. revenue this event"
+                  label="Est. revenue this date"
                   value={`$${stats.revenueEstimate.toLocaleString()}`}
                   hint={`${stats.batteriesNeeded} batteries × $${stats.spreadPerBattery}/battery`}
                 />
@@ -1189,17 +1309,17 @@ function App() {
               </button>
             </aside>
 
-            <section className="absolute right-20 top-4 z-20 w-[380px] rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
+            <section className="absolute right-4 top-4 z-20 w-[360px] rounded-xl border border-slate-700/70 bg-[#0d1426]/95 p-4 shadow-2xl backdrop-blur">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-[#3b82f6]">
                 Operations Overview
               </h2>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <KpiCard label="Events in next 24h" value={kpi.upcoming24h} />
-                <KpiCard label="Events today" value={kpi.totalToday} />
-                <KpiCard label="Simultaneous events" value={overlaps.length} />
+                <KpiCard label="Events this date" value={kpi.eventsOnDate} />
+                <KpiCard label="Event dates (next 7d)" value={kpi.upcomingDates} />
+                <KpiCard label="ZIPs affected" value={allAffectedZips.length} />
                 <KpiCard
-                  label="Est. revenue today"
-                  value={`$${Math.round(kpi.projectedTodayRevenue).toLocaleString()}`}
+                  label="Est. revenue this date"
+                  value={`$${Math.round(kpi.projectedRevenue).toLocaleString()}`}
                 />
               </div>
 
@@ -1208,10 +1328,7 @@ function App() {
                 className="mt-3 rounded-lg border p-3 text-sm"
                 style={{ borderColor: ercotTier.border, background: ercotTier.bg }}
               >
-                <p
-                  className="mb-1 text-xs uppercase tracking-wide"
-                  style={{ color: ercotTier.color }}
-                >
+                <p className="mb-1 text-xs uppercase tracking-wide" style={{ color: ercotTier.color }}>
                   ERCOT Price Alert
                 </p>
                 <div className="flex items-center justify-between">
@@ -1228,40 +1345,6 @@ function App() {
                   Normal &lt;$50 · Elevated $50–150 · Critical $150–500 · Emergency $500+
                 </p>
               </div>
-
-              {/* Simultaneous events */}
-              <div className="mt-3 rounded-lg border border-slate-700 bg-[#050914] p-3 text-sm">
-                <p className="mb-2 text-xs uppercase tracking-wide text-slate-400">
-                  Simultaneous Events
-                </p>
-                {overlaps.length === 0 ? (
-                  <p className="text-xs text-slate-400">No other UT events overlap this window.</p>
-                ) : (
-                  overlaps.map((e) => (
-                    <div key={e.id} className="mt-1.5 rounded-md border border-slate-700 bg-[#0b1223] px-2 py-1.5">
-                      <p className="text-xs font-semibold text-slate-100">{e.name}</p>
-                      <p className="text-xs text-slate-400">
-                        {e.venue} · {formatDateTime(e.startAt)}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Season math */}
-              <div className="mt-3 rounded-lg border border-slate-700 bg-[#050914] p-3 text-sm">
-                <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">
-                  Football Season Estimate
-                </p>
-                <p className="text-xs leading-relaxed text-slate-300">
-                  {stats.batteriesNeeded.toLocaleString()} batteries × ${stats.spreadPerBattery} avg
-                  spread × 8 home games
-                </p>
-                <p className="mt-1 font-semibold text-[#22c55e]">
-                  = ${(stats.batteriesNeeded * stats.spreadPerBattery * 8).toLocaleString()} season estimate
-                </p>
-                <p className="mt-1 text-xs text-slate-500">Fleet grows as Base Power deploys more units.</p>
-              </div>
             </section>
           </>
         )}
@@ -1275,23 +1358,35 @@ function App() {
               </h2>
               <div className="mt-3">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Event
+                  Game Date
                 </label>
                 <select
-                  value={selectedEvent.id}
-                  onChange={(e) => setSelectedId(e.target.value)}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full rounded-md border border-slate-600 bg-[#111a30] px-3 py-2 text-sm text-slate-100 outline-none transition hover:border-[#3b82f6] focus:border-[#3b82f6]"
                 >
-                  {events.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
-                  ))}
+                  {dateList.map((dk) => {
+                    const count = eventsByDate.get(dk)?.length ?? 0;
+                    return (
+                      <option key={dk} value={dk}>
+                        {formatDateLabel(dk)}{count > 1 ? ` — ${count} events` : ""}
+                      </option>
+                    );
+                  })}
                 </select>
+              </div>
+              {/* Compact event list */}
+              <div className="mt-2 space-y-1">
+                {eventsOnDate.map((ev) => (
+                  <div key={ev.id} className="rounded border border-slate-700/60 bg-[#0b1223] px-2 py-1.5 text-xs">
+                    <span className="font-semibold text-slate-200">{ev.name}</span>
+                    <span className="ml-2 text-slate-500">{ev.venue} · ends {ev.endTime}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-3 space-y-2">
-                <StatRow label="Affected ZIP codes" value={selectedEvent.affectedZips.join(", ")} />
+                <StatRow label="Affected ZIP codes" value={allAffectedZips.join(", ")} />
                 <StatRow label="Demand spike" value={`${stats.projectedMW.toFixed(1)} MW`} />
                 <StatRow
                   label="Batteries"
@@ -1333,7 +1428,7 @@ function App() {
                   </p>
                   <p>
                     {stats.batteriesNeeded.toLocaleString()} batteries on standby across ZIPs{" "}
-                    {selectedEvent.affectedZips.join(", ")}
+                    {allAffectedZips.join(", ")}
                   </p>
                   <p className="mt-0.5">No pre-charging in progress — awaiting dispatch command</p>
                 </div>
@@ -1393,7 +1488,7 @@ function App() {
                       <p>• {stats.batteriesNeeded.toLocaleString()} batteries: Standby → Pre-charging</p>
                       <p>• Charge target: 95% by {stats.preChargeBy}</p>
                       <p>• Discharge window: {dispatchPayload.discharge_window}</p>
-                      <p>• ZIPs covered: {selectedEvent.affectedZips.join(", ")}</p>
+                      <p>• ZIPs covered: {allAffectedZips.join(", ")}</p>
                       <p className="font-semibold text-[#22c55e]">
                         • Est. revenue: {dispatchPayload.estimated_total_capture}
                       </p>
@@ -1441,18 +1536,17 @@ function App() {
                   </p>
                 ) : (
                   dispatchHistory.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="grid grid-cols-6 border-t border-slate-800 px-3 py-2.5 text-slate-200"
-                    >
-                      <span className="font-mono text-slate-400 text-xs">{entry.dispatchId}</span>
-                      <span className="truncate pr-2">{entry.name}</span>
-                      <span>{entry.batteries.toLocaleString()}</span>
-                      <span className="text-[#eab308]">${entry.spreadPerBattery}/batt.</span>
-                      <span className="font-semibold text-[#22c55e]">
-                        ${entry.totalCapture.toLocaleString()}
-                      </span>
-                      <span className="text-slate-400">{formatDateTime(entry.when)}</span>
+                    <div key={entry.id} className="border-t border-slate-800 px-3 py-2.5 text-slate-200">
+                      <div className="grid grid-cols-4 gap-2">
+                        <span className="font-mono text-slate-400 text-xs col-span-1">{entry.dispatchId}</span>
+                        <span className="text-slate-300 col-span-1">{entry.date}</span>
+                        <span className="text-[#eab308]">${entry.spreadPerBattery}/batt.</span>
+                        <span className="font-semibold text-[#22c55e]">${entry.totalCapture.toLocaleString()}</span>
+                      </div>
+                      <p className="mt-0.5 text-slate-500 text-xs">
+                        {entry.eventCount} event(s) · {entry.batteries.toLocaleString()} batteries · {formatDateTime(entry.when)}
+                      </p>
+                      <p className="text-slate-600 text-xs truncate">{entry.eventNames}</p>
                     </div>
                   ))
                 )}
