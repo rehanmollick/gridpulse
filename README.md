@@ -1,178 +1,146 @@
-A real-time battery dispatch command center built for **Base Power Company** — Austin, TX.
+# GridPulse
 
-GridPulse gives grid operators a live map-based interface to monitor energy demand spikes around UT Austin sports events, pre-position battery clusters, and dispatch stored energy back to the grid at peak pricing moments — all guided by AI.
+### Real-time battery dispatch for the Austin grid. Built for [Base Power Company](https://www.basepower.com).
+
+GridPulse is an operator command center: it watches UT Austin sports events, forecasts neighborhood-level demand spikes, and tells Base Power's fleet of **4,200 residential batteries** exactly when and where to discharge. Every decision is backed by live grid pricing and AI-generated operator briefs.
+
+> No backend. No database. Runs entirely in the browser.
 
 ---
 
 ## What It Does
 
-When a major event (football game, basketball, baseball) happens at a UT Austin venue, surrounding zip codes see demand spikes of 80–190% above normal. GridPulse:
+Large events drive 80-190% demand spikes in surrounding zip codes. GridPulse turns that into an actionable dispatch in three steps:
 
-1. Ingests historical UT Athletics event data and facility energy usage
-2. Calculates exactly which zip codes will spike and by how much
-3. Tells operators how many batteries to pre-charge and when
-4. Lets the AI generate a full dispatch brief — and then executes the dispatch
-
-Operators go from raw event data to a confirmed energy dispatch in three clicks.
+1. **Forecast** the demand spike per zip code based on event, venue, and attendance
+2. **Pre-position** the right number of batteries with a pre-charge deadline
+3. **Dispatch** via AI-confirmed command logged with revenue and timestamp
 
 ---
 
-## Screenshot — Dashboard
+## Screenshots
 
-<img width="1710" height="944" alt="Screenshot 2026-02-21 at 5 53 18 PM" src="https://github.com/user-attachments/assets/56f0e614-caad-4c8e-b67d-dff053e81920" />
+**Dashboard**
 
----
+<img width="1710" height="944" alt="Dashboard" src="https://github.com/user-attachments/assets/56f0e614-caad-4c8e-b67d-dff053e81920" />
 
-## Screenshot — Dispatch AI Briefing
+**Dispatch Setup and AI Brief**
 
-<img width="1710" height="947" alt="Screenshot 2026-02-21 at 5 54 52 PM" src="https://github.com/user-attachments/assets/537865ce-7650-4001-b999-e7989ecaf608" />
+<img width="1710" height="947" alt="Dispatch AI Brief" src="https://github.com/user-attachments/assets/537865ce-7650-4001-b999-e7989ecaf608" />
 
----
+**Dispatch Commands**
 
-## Who It's For
+<img width="1708" height="942" alt="Dispatch Commands" src="https://github.com/user-attachments/assets/0e4fe09d-40e5-4e41-9908-a4d4518b4c13" />
 
-**Base Power Company** operates a fleet of residential battery systems across Austin. Each home battery is a dispatchable asset. GridPulse is the operator layer that coordinates when and where to dispatch that fleet based on real grid signals and event-driven demand forecasting.
+**Dispatch Log**
 
-The fleet: **4,200 batteries** across Austin metro.
+<img width="1710" height="946" alt="Dispatch Log" src="https://github.com/user-attachments/assets/165735bb-cc73-46da-8c1b-2604aa0cc675" />
 
 ---
 
 ## How It Works
 
-### Event Data Pipeline
+### Data Pipeline
 
-- Loads `UT_Sports_Events.csv` — every UT home game with date, time, venue, attendance, and sport
-- Loads `Facility_Energy_Usage.csv` — historical energy consumption per campus facility
-- Loads `venues_capcity.csv` — venue names, coordinates, and capacity figures
-- All three are parsed client-side from CSV at runtime — no backend required
+Three CSVs parsed client-side at runtime:
 
-### Demand Spike Calculation
+| File | Contents |
+|------|---------|
+| `UT_Sports_Events.csv` | Every UT home game: date, time, venue, attendance, sport |
+| `Facility_Energy_Usage.csv` | Historical energy consumption per campus facility |
+| `venues_capcity.csv` | Venue names, coordinates, capacity |
 
-Each event maps to 1–4 Austin zip codes based on venue proximity. Load increase per zip is calculated as:
-
-```
-demandIncrease (MW) = (attendance / venueCapacity) × categoryOccupancyFactor × baseLoadMultiplier × zipLoadShare
-```
-
-- `categoryOccupancyFactor` — Football = 1.0, Basketball = 0.85, Baseball = 0.65, etc.
-- `baseLoadMultiplier` — scales the raw attendance ratio to realistic MW values
-- `zipLoadShare` — each zip gets a weighted percentage of total projected load based on geographic proximity to the venue
-
-Surge tiers displayed on map:
-- Red: >160% above normal
-- Orange: 120–160% elevated  
-- Yellow: 80–120% moderate
-
-### Battery Dispatch Calculation
+### Demand Spike Formula
 
 ```
-batteriesNeeded = demandIncrease (MW) × 1000 (kW) / spreadPerBattery (kW)
-preChargeBy = eventStartTime − 90 minutes
-estimatedRevenue = batteriesNeeded × ercotPrice × revenuePerBatteryFactor
+demandIncrease (MW) = (attendance / venueCapacity) x categoryOccupancyFactor x baseLoadMultiplier x zipLoadShare
 ```
 
-`spreadPerBattery` is the per-unit discharge rate based on battery spec (Base Power hardware).
+- **`categoryOccupancyFactor`** -- Football: 1.0 / Basketball: 0.85 / Baseball: 0.65
+- **`zipLoadShare`** -- each affected zip gets a weighted % of total load by proximity to venue
+
+Map surge tiers: **Red** >160% / **Orange** 120-160% / **Yellow** 80-120%
+
+### Battery Dispatch Formula
+
+```
+batteriesNeeded  = demandIncrease (kW) / spreadPerBattery (kW)
+preChargeBy      = eventStartTime - 90 min
+estimatedRevenue = batteriesNeeded x ercotPrice x revenuePerBatteryFactor
+```
 
 ### ERCOT Price Simulation
 
-Live ERCOT pricing is attempted via fetch. It always fails due to CORS, so GridPulse falls back to a deterministic date-seeded simulation:
+Live ERCOT fetch is CORS-blocked, so pricing falls back to a **deterministic date-seeded formula** -- same date always returns the same price:
 
 ```
 price = seasonalBase + weekendBonus + attendanceBonus + bigEventBonus + deterministicNoise
 ```
 
-- Summer (Jun–Sep): base $85/MWh
-- Spring (Apr–May): base $52/MWh
-- Fall (Oct–Nov): base $48/MWh
-- Winter (Dec–Mar): base $38/MWh
-- Weekend: +$18, Friday: +$10
-- Attendance: up to +$60 scaled to 120k max
-- Football/Basketball: +$25 flat
-- Noise: ±$15 seeded from date string (same date = same price, always)
+| Factor | Value |
+|--------|-------|
+| Summer base (Jun-Sep) | $85/MWh |
+| Winter base (Dec-Mar) | $38/MWh |
+| Weekend bonus | +$18 |
+| Football or Basketball | +$25 |
+| Attendance (scaled) | up to +$60 |
+| Seeded noise | +-$15 |
 
-Price snaps immediately when the operator changes the date.
-
----
-
-## Screenshot — Dispatch Commands Generated
-
-<img width="1708" height="942" alt="Screenshot 2026-02-21 at 5 56 56 PM" src="https://github.com/user-attachments/assets/0e4fe09d-40e5-4e41-9908-a4d4518b4c13" />
+Price **snaps immediately** when the operator changes the date.
 
 ---
 
-## APIs Used
+## APIs
 
 | API | Purpose |
 |-----|---------|
-| **Mapbox GL JS v2.15.0** | Interactive map, venue markers, battery cluster dots, demand surge heat zones |
-| **Groq — llama-3.3-70b-versatile** | Generates the AI Dispatch Brief — operator instructions, timing, risk flags |
-| **Morph — morph-v3-fast** | Confirms and finalizes the dispatch command, returns structured payload |
-| **ERCOT** | Attempted live real-time grid pricing (CORS-blocked, falls back to simulation) |
+| **Mapbox GL JS v2.15.0** | Map, venue markers, battery clusters, demand surge zones |
+| **Groq / llama-3.3-70b-versatile** | AI Dispatch Brief: operator instructions, timing, risk flags |
+| **Morph / morph-v3-fast** | Dispatch confirmation and structured payload finalization |
+| **ERCOT** | Live grid pricing attempt (falls back to simulation) |
 
 ---
 
 ## AI Integration
 
-GridPulse uses AI at two stages of the dispatch workflow:
+### Stage 1 -- Dispatch Brief (Groq)
 
-**Stage 1 — Dispatch Brief (Groq)**
+Operator clicks **"Generate AI Dispatch Brief."** GridPulse sends Groq a structured prompt with event details, attendance, temperature, battery count, zip surge percentages, ERCOT price, and pre-charge deadline.
 
-The operator clicks "Generate AI Dispatch Brief." GridPulse sends a structured prompt to Groq's `llama-3.3-70b-versatile` model containing:
-- Event name, venue, date, start/end time
-- Attendance and estimated temperature
-- Number of batteries to dispatch
-- Affected zip codes and their surge percentages
-- Current ERCOT price and tier
-- Pre-charge deadline
+Groq returns a plain-language operator brief: what to activate, when, and what risk conditions to watch. Written for someone managing a live grid event.
 
-Groq returns a plain-language brief written for a grid operator: what to do, when, what to watch for. It reads like an air traffic control briefing — precise, no fluff.
+### Stage 2 -- Dispatch Confirmation (Morph)
 
-**Stage 2 — Dispatch Confirmation (Morph)**
+Operator clicks **"Confirm Dispatch."** GridPulse sends the full payload to Morph's `morph-v3-fast`, which validates and finalizes it. The result is a logged dispatch record with command ID, battery count, revenue, and timestamp.
 
-After reviewing the brief, the operator clicks "Confirm Dispatch." GridPulse sends the full dispatch payload to Morph's `morph-v3-fast` model, which validates and finalizes it. The confirmed dispatch is logged with a unique command ID, timestamp, battery count, and revenue estimate.
-
-If either API key is missing, both stages fall back gracefully — Groq uses a mock brief, Morph uses a 900ms simulated confirmation.
+Both stages fall back gracefully if API keys are missing.
 
 ---
 
-## Sustainability Impact
+## Why This Matters for Clean Energy
 
-Base Power's residential battery network is built entirely on **clean stored energy** — no combustion, no peaker plants.
+**The problem:** Grid operators handle demand spikes with natural gas peaker plants. They take 10-30 minutes to spin up, emit 0.5-0.8 kg CO2 per kWh, and only run briefly -- making them expensive and dirty per kWh delivered.
 
-Traditional grid operators handle demand spikes by spinning up natural gas peaker plants. These plants:
-- Take 10–30 minutes to reach output
-- Emit CO₂ at ~0.5–0.8 kg per kWh
-- Run inefficiently because they only activate for short windows
+**GridPulse's answer:** Replace peaker response with pre-positioned battery dispatch. Base Power batteries charge during off-peak hours from Texas wind and solar, then discharge precisely at peak demand -- **zero combustion at point of use, instant response.**
 
-GridPulse replaces that response with pre-positioned battery dispatch. The energy stored in Base Power's residential fleet comes from the grid during off-peak hours — increasingly sourced from Texas wind and solar. That stored energy is then discharged precisely when and where it's needed.
+For a single football game dispatch (~1,000 batteries, 2-3 MW):
 
-**For a single football game dispatch (1,000+ batteries, ~2–3 MW):**
-- Zero combustion emissions at point of discharge
-- Response time: immediate (batteries pre-charged 90 min before kickoff)
-- Energy returned to grid at highest-value moment (peak ERCOT pricing = peak demand = highest carbon intensity on the grid)
+- **No emissions** at point of discharge
+- **Immediate response** vs. 10-30 min peaker spin-up
+- **Maximum grid value** -- dispatching at peak ERCOT price displaces the dirtiest, most expensive generation on the grid
 
-As Texas builds more wind and solar capacity, the stored energy in Base Power's fleet becomes increasingly renewable. GridPulse is the operational layer that makes that stored clean energy dispatchable at city scale.
-
-**The bigger picture:** As cities grow and host more large events — concerts, sports, festivals — demand spikes become more frequent and harder to predict. A distributed battery network coordinated by a tool like GridPulse means cities can absorb those spikes without new fossil fuel infrastructure. It's how clean energy scales to urban density.
-
----
-
-## Screenshot — Dispatch Log
-
-<img width="1710" height="946" alt="Screenshot 2026-02-21 at 5 58 36 PM" src="https://github.com/user-attachments/assets/165735bb-cc73-46da-8c1b-2604aa0cc675" />
+As Texas adds more wind and solar, every battery in Base Power's fleet gets cleaner over time. **GridPulse is the coordination layer that makes distributed clean energy dispatchable at city scale** -- letting dense urban areas absorb event-driven demand spikes without building new fossil fuel infrastructure.
 
 ---
 
 ## Tech Stack
 
-- **React 18 + Vite 5** — frontend framework and dev server
-- **Mapbox GL JS** — map rendering via CDN
-- **Tailwind CSS** — utility styling via CDN with custom design tokens
-- **GSAP + lucide-react** — animation and iconography
-- **Google Fonts** — Plus Jakarta Sans, Outfit, Cormorant Garamond, JetBrains Mono
-- **Groq SDK** — AI brief generation
-- **Morph API** — dispatch confirmation
-- No backend. No database. Runs entirely in the browser.
+- **React 18 + Vite 5**
+- **Mapbox GL JS** via CDN
+- **Tailwind CSS** via CDN with custom design tokens (Moss, Clay, Cream, Charcoal palette)
+- **Groq SDK** + **Morph API**
+- **GSAP** + **lucide-react**
+- **Google Fonts** -- Plus Jakarta Sans, Outfit, Cormorant Garamond, JetBrains Mono
 
 ---
 
@@ -184,7 +152,7 @@ cd gridpulse
 npm install
 ```
 
-Create a `.env` file:
+`.env`:
 
 ```
 VITE_MAPBOX_TOKEN=your_mapbox_token
@@ -194,9 +162,8 @@ VITE_MORPH_API_KEY=your_morph_key
 
 ```bash
 npm run dev
+# http://localhost:5173
 ```
-
-Open `http://localhost:5173`
 
 ---
 
