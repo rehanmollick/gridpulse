@@ -4,8 +4,6 @@
 
 GridPulse is an operator command center: it watches UT Austin sports events, forecasts neighborhood-level demand spikes, and tells Base Power's fleet of **4,200 residential batteries** exactly when and where to discharge. Every decision is backed by live grid pricing and AI-generated operator briefs.
 
-> No backend. No database. Runs entirely in the browser.
-
 ---
 
 ## What It Does
@@ -18,7 +16,6 @@ Large events drive 80-190% demand spikes in surrounding zip codes. GridPulse tur
 
 ---
 
-## Screenshots
 
 **Dashboard**
 
